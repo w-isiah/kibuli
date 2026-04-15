@@ -1,0 +1,218 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Guardian{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+              'check-circle' if category == 'success' 
+              else 'exclamation-circle' if category == 'warning' 
+              else 'times-circle' if category == 'danger' 
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Guardian</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Guardians</a></li>
+            <li class="breadcrumb-item active">Edit Guardian</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Edit Guardian</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <form action="{{ url_for('guardians_blueprint.edit_guardian', guardian_id=guardian.guardian_id) }}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                <!-- First Name -->
+                <div class="form-group row mb-3">
+                  <label for="first_name" class="col-sm-2 col-form-label">First Name:</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="first_name" class="form-control" value="{{ guardian.first_name }}" required>
+                  </div>
+                </div>
+
+                <!-- Other Name -->
+                <div class="form-group row mb-3">
+                  <label for="other_name" class="col-sm-2 col-form-label">Other Name:</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="other_name" class="form-control" value="{{ guardian.other_name }}">
+                  </div>
+                </div>
+
+                <!-- Last Name -->
+                <div class="form-group row mb-3">
+                  <label for="last_name" class="col-sm-2 col-form-label">Last Name:</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="last_name" class="form-control" value="{{ guardian.last_name }}" required>
+                  </div>
+                </div>
+
+                <!-- Relationship -->
+                <div class="form-group row mb-3">
+                  <label for="relationship" class="col-sm-2 col-form-label">Relationship:</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="relationship" class="form-control" value="{{ guardian.relationship }}">
+                  </div>
+                </div>
+
+                <!-- Contact Number -->
+                <div class="form-group row mb-3">
+                  <label for="contact_number" class="col-sm-2 col-form-label">Contact Number:</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="contact_number" class="form-control" value="{{ guardian.contact_number }}">
+                  </div>
+                </div>
+
+                <!-- Current Image -->
+                <div class="form-group row mb-3">
+                  <label class="col-sm-2 col-form-label">Current Image:</label>
+                  <div class="col-sm-10">
+                    {% if guardian.image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ guardian.image) }}" alt="mother Image" style="max-width: 150px; max-height: 150px;">
+                      
+                    {% else %}
+                      <p>No image uploaded.</p>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Upload New Image -->
+                <div class="form-group row mb-3">
+                  <label for="image" class="col-sm-2 col-form-label">New Image (optional):</label>
+                  <div class="col-sm-10">
+                    <input type="file" name="image" class="form-control">
+                  </div>
+                </div>
+
+                <!-- Current Signature -->
+                <div class="form-group row mb-3">
+                  <label class="col-sm-2 col-form-label">Current Signature:</label>
+                  <div class="col-sm-10">
+                    {% if guardian.sign_image %}
+                      
+
+                       <img src="{{ url_for('static', filename='uploads/' ~ guardian.sign_image) }}" alt="mother Sign Image" style="max-width: 150px; max-height: 150px;">
+                    {% else %}
+                      <p>No signature uploaded.</p>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Upload New Signature -->
+                <div class="form-group row mb-3">
+                  <label for="sign_image" class="col-sm-2 col-form-label">New Signature (optional):</label>
+                  <div class="col-sm-10">
+                    <input type="file" name="sign_image" class="form-control">
+                  </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card-footer">Footer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <script src="/static/assets/js/demo.js"></script>
+  <script src="/static/assets/js/mine.js"></script>
+  <script>
+    $(document).ready(function () {
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock javascripts %}
+s

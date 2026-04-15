@@ -1,0 +1,145 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Discount Calculator {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini layout-footer-fixed {% endblock body_class %} 
+
+<!-- Specific Page CSS goes HERE -->
+{% block stylesheets %}
+
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}  
+
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Discount Calculator</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Discount Calculator</li>
+          </ol>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Left Column: Discount Input Form -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="card-title">Discount Calculator</h5>
+              <a href="/sales" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> Sell
+              </a>
+            </div>
+
+            <div class="card-body">
+              <form method="POST" class="form-horizontal">
+                 <!-- CSRF Token for security -->
+                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <!-- Original Price -->
+                <div class="row mb-3">
+                  <label for="original_price" class="col-sm-2 col-form-label">Original Price</label>
+                  <div class="col-sm-10">
+                    <input type="number" id="original_price" name="original_price" class="form-control" required placeholder="Enter original price" title="Please enter the original price">
+                    <small class="form-text text-muted">Only numeric values are allowed.</small>
+                  </div>
+                </div>
+
+                <!-- Discounted Price -->
+                <div class="row mb-3">
+                  <label for="discounted_price" class="col-sm-2 col-form-label">Discounted Price</label>
+                  <div class="col-sm-10">
+                    <input type="number" id="discounted_price" name="discounted_price" class="form-control" required placeholder="Enter discounted price" title="Please enter the discounted price">
+                    <small class="form-text text-muted">Only numeric values are allowed.</small>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions text-right">
+                  <button type="submit" class="btn btn-sm btn-primary">Calculate</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Results -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="card-title">Discount Results</h5>
+            </div>
+
+            <div class="card-body">
+              {% if discount_amount is not none %}
+              <div class="result">
+                <h3>Results:</h3>
+                <div class="list-group">
+                  <div class="list-group-item d-flex justify-content-between">
+                    <span>Original Price</span>
+                    <span>{{ original_price }} /=</span>
+                  </div>
+                  <div class="list-group-item d-flex justify-content-between">
+                    <span>Discounted Price</span>
+                    <span>{{ discounted_price }} /=</span>
+                  </div>
+                  <div class="list-group-item d-flex justify-content-between">
+                    <span>Discount Amount</span>
+                    <span>{{ discount_amount }} /=</span>
+                  </div>
+                  <div class="list-group-item d-flex justify-content-between">
+                    <span>Discount Percentage</span>
+                    <span>{{ discount_percentage }}%</span>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              {% if error %}
+              <div class="alert alert-danger mt-3">
+                <p class="error">{{ error }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/assets/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/assets/js/demo.js"></script>
+
+{% endblock javascripts %}

@@ -1,0 +1,491 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <!-- Brand Logo -->
+  <a href="{{ url_for('home_blueprint.index') }}" class="brand-link text-center">
+    <img src="/static/uploads/id_image/logo2.png"
+    alt="School Logo"
+    class="brand-image img-circle elevation-3"
+    style="opacity: .8">
+    <span class="brand-text font-weight-light">Stockvel Kata</span>
+  </a>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- User Panel -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
+      <div class="image">
+        {% if session.get('profile_image') %}
+        <img src="/static/uploads/{{ session['profile_image'] }}"
+        class="img-circle elevation-2"
+        alt="User Image"
+        onerror="this.src='/static/assets/img/default-user.png'">
+        {% else %}
+        <img src="/static/assets/img/default-user.png"
+        class="img-circle elevation-2"
+        alt="User Image">
+        {% endif %}
+      </div>
+      <div class="info">
+        <a href="{{ url_for('authentication_blueprint.edit_user_profile', id=session['id']) }}" 
+        class="d-block" title="View Profile">
+        <i class="fas fa-user-circle mr-1"></i>
+        {{ session.get('first_name', 'User') }} {{ session.get('last_name', '') }}
+      </a>
+      <small class="text-muted">
+        <i class="fas fa-user-tag mr-1"></i>
+        {{ session.get('role', 'User')|replace('_', ' ')|title }}
+      </small>
+    </div>
+  </div>
+
+  <!-- SidebarSearch Form -->
+  <div class="form-inline mb-3">
+    <div class="input-group" data-widget="sidebar-search">
+      <input class="form-control form-control-sidebar"
+      type="search"
+      placeholder="Search menu..."
+      aria-label="Search"
+      id="sidebarSearch">
+      <div class="input-group-append">
+        <button class="btn btn-sidebar">
+          <i class="fas fa-search fa-fw"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Menu -->
+  <nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent"
+    data-widget="treeview"
+    role="menu"
+    data-accordion="false">
+
+    <!-- Dashboard -->
+    <li class="nav-item">
+      <a href="/index"
+      class="nav-link {% if segment == 'index' %}active{% endif %}">
+      <i class="nav-icon fas fa-tachometer-alt"></i>
+      <p>Dashboard</p>
+    </a>
+  </li>
+
+  <!-- Student Management -->
+  <li class="nav-header text-uppercase text-xs mt-2 mb-1">
+    <i class="fas fa-user-graduate mr-1"></i> Learners MANAGEMENT
+  </li>
+  <li class="nav-item">
+    <a href="/pupils"
+    class="nav-link {% if segment == 'pupils' %}active{% endif %}">
+    <i class="nav-icon fas fa-user-graduate"></i>
+    <p>Learners</p>
+  </a>
+</li>
+<li class="nav-item">
+  <a href="/add_admission"
+  class="nav-link {% if segment == 'add_admission' %}active{% endif %}">
+  <i class="nav-icon fas fa-user-plus"></i>
+  <p>Admissions</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/guardians"
+  class="nav-link {% if segment == 'guardians' %}active{% endif %}">
+  <i class="nav-icon fas fa-user-friends"></i>
+  <p>Guardians</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/gen_ids"
+  class="nav-link {% if segment == 'gen_ids' %}active{% endif %}">
+  <i class="nav-icon far fa-id-card"></i>
+  <p>ID Cards</p>
+</a>
+</li>
+
+<!-- Academic Management -->
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-book-open mr-1"></i> ACADEMIC MANAGEMENT
+</li>
+<li class="nav-item">
+  <a href="/term"
+  class="nav-link {% if segment == 'term' %}active{% endif %}">
+  <i class="nav-icon fas fa-calendar-alt"></i>
+  <p>Terms</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/subjects"
+  class="nav-link {% if segment == 'subjects' %}active{% endif %}">
+  <i class="nav-icon fas fa-book"></i>
+  <p>Subjects</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/study_years"
+  class="nav-link {% if segment == 'study_years' %}active{% endif %}">
+  <i class="nav-icon fas fa-calendar-year"></i>
+  <p>Study Years</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/division"
+  class="nav-link {% if segment == 'division' %}active{% endif %}">
+  <i class="nav-icon fas fa-sitemap"></i>
+  <p>Divisions</p>
+</a>
+</li>
+
+<!-- Class & Teacher Management -->
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-chalkboard-teacher mr-1"></i> CLASS MANAGEMENT
+</li>
+<li class="nav-item">
+  <a href="/teachers"
+  class="nav-link {% if segment == 'teachers' %}active{% endif %}">
+  <i class="nav-icon fas fa-chalkboard-teacher"></i>
+  <p>Teachers</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/classteacher_assign"
+  class="nav-link {% if segment == 'classteacher_assign' %}active{% endif %}">
+  <i class="nav-icon fas fa-user-tie"></i>
+  <p>Assign Class Teacher</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/subject_assign"
+  class="nav-link {% if segment == 'subject_assign' %}active{% endif %}">
+  <i class="nav-icon fas fa-tasks"></i>
+  <p>Assign Subjects</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/stream_assign"
+  class="nav-link {% if segment == 'stream_assign' %}active{% endif %}">
+  <i class="nav-icon fas fa-random"></i>
+  <p>Stream Assignment</p>
+</a>
+</li>
+
+<li class="nav-item">
+  <a href="/streams"
+  class="nav-link {% if segment == 'streams' %}active{% endif %}">
+  <i class="nav-icon fas fa-random"></i>
+  <p>Streams</p>
+</a>
+</li>
+
+<li class="nav-item">
+  <a href="/classes"
+  class="nav-link {% if segment == 'streams' %}active{% endif %}">
+  <i class="nav-icon fas fa-random"></i>
+  <p>Classes</p>
+</a>
+</li>
+
+
+<!-- Registration & Promotions -->
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-user-check mr-1"></i> REGISTRATION
+</li>
+<li class="nav-item">
+  <a href="/r_pupils"
+  class="nav-link {% if segment == 'r_pupils' %}active{% endif %}">
+  <i class="nav-icon fas fa-user-check"></i>
+  <p>Term Registration</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/r_pupils"
+  class="nav-link {% if segment == 'promotions' %}active{% endif %}">
+  <i class="nav-icon fas fa-level-up-alt"></i>
+  <p>Promotions</p>
+</a>
+</li>
+
+<!-- Results & Reports -->
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-chart-line mr-1"></i> RESULTS & REPORTS
+</li>
+<li class="nav-item">
+  <a href="/results_index"
+  class="nav-link {% if segment == 'results_index' %}active{% endif %}">
+  <i class="nav-icon fas fa-chart-bar"></i>
+  <p>Results</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/past_results_index"
+  class="nav-link {% if segment == 'past_results_index' %}active{% endif %}">
+  <i class="nav-icon fas fa-history"></i>
+  <p>Past Results</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/subject_comments"
+  class="nav-link {% if segment == 'subject_comments' %}active{% endif %}">
+  <i class="nav-icon fas fa-comment-alt"></i>
+  <p>Subject Comments</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/headmaster_comments"
+  class="nav-link {% if segment == 'headmaster_comments' %}active{% endif %}">
+  <i class="nav-icon fas fa-user-edit"></i>
+  <p>Head Teacher Comments</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/classteacher_comments"
+  class="nav-link {% if segment == 'classteacher_comments' %}active{% endif %}">
+  <i class="nav-icon fas fa-comments"></i>
+  <p>Class Teacher Comments</p>
+</a>
+</li>
+
+<!-- System Management -->
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-cogs mr-1"></i> SYSTEM MANAGEMENT
+</li>
+<li class="nav-item">
+  <a href="/manage_users"
+  class="nav-link {% if segment == 'manage_users' %}active{% endif %}">
+  <i class="nav-icon fas fa-user-cog"></i>
+  <p>User Accounts</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/managed_locations"
+  class="nav-link {% if segment == 'managed_locations' %}active{% endif %}">
+  <i class="nav-icon fas fa-map-marker-alt"></i>
+  <p>Locations</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/inventory_index"
+  class="nav-link {% if segment == 'inventory_index' %}active{% endif %}">
+  <i class="nav-icon fas fa-boxes"></i>
+  <p>Inventory</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/room_colection_index"
+  class="nav-link {% if segment == 'room_colection_index' %}active{% endif %}">
+  <i class="nav-icon fas fa-door-closed"></i>
+  <p>Rooms</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/dorm_reg"
+  class="nav-link {% if segment == 'dorm_reg' %}active{% endif %}">
+  <i class="nav-icon fas fa-bed"></i>
+  <p>Dormitories</p>
+</a>
+</li>
+
+<!-- Unassign Management (Super Admin only) -->
+{% if session.get('role') == 'super_admin' %}
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-user-slash mr-1"></i> ADMIN TOOLS
+</li>
+<li class="nav-item">
+  <a href="/subject_unassign"
+  class="nav-link {% if segment == 'subject_unassign' %}active{% endif %}">
+  <i class="nav-icon fas fa-times-circle"></i>
+  <p>Unassign Subjects</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/classteacher_unassign"
+  class="nav-link {% if segment == 'classteacher_unassign' %}active{% endif %}">
+  <i class="nav-icon fas fa-user-slash"></i>
+  <p>Unassign Teachers</p>
+</a>
+</li>
+{% endif %}
+
+
+
+<!-- Finances (Super Admin only) -->
+{% if session.get('role') == 'super_admin' %}
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-money-bill-wave mr-1"></i> FINANCES
+</li>
+
+<li class="nav-item">
+  <a href="/fees-summary"
+  class="nav-link {% if segment == 'fee_management' %}active{% endif %}">
+  <i class="nav-icon fas fa-file-invoice-dollar"></i>
+  <p>Fee Management</p>
+</a>
+</li>
+
+<li class="nav-item">
+  <a href="/expense_management"
+  class="nav-link {% if segment == 'expense_management' %}active{% endif %}">
+  <i class="nav-icon fas fa-coins"></i>
+  <p>Expense Management</p>
+</a>
+</li>
+
+<li class="nav-item">
+  <a href="/financial_reports"
+  class="nav-link {% if segment == 'financial_reports' %}active{% endif %}">
+  <i class="nav-icon fas fa-chart-line"></i>
+  <p>Financial Reports</p>
+</a>
+</li>
+{% endif %}
+
+
+
+
+<!-- E-Learning -->
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-laptop-code mr-1"></i> E-LEARNING
+</li>
+<li class="nav-item">
+  <a href="https://e-learning.jerusaleminstitutelira.ac.ug/"
+  class="nav-link"
+  target="_blank"
+  rel="noopener noreferrer">
+  <i class="nav-icon fas fa-laptop-code"></i>
+  <p>Online Platform</p>
+</a>
+</li>
+
+
+<!-- Quick Links -->
+<li class="nav-header text-uppercase text-xs mt-2 mb-1">
+  <i class="fas fa-link mr-1"></i> QUICK LINKS
+</li>
+<li class="nav-item">
+  <a href="{{ url_for('authentication_blueprint.logout') }}" 
+  class="nav-link text-danger">
+  <i class="nav-icon fas fa-sign-out-alt"></i>
+  <p>Logout</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/help"
+  class="nav-link">
+  <i class="nav-icon fas fa-question-circle"></i>
+  <p>Help</p>
+</a>
+</li>
+<li class="nav-item">
+  <a href="/about"
+  class="nav-link">
+  <i class="nav-icon fas fa-info-circle"></i>
+  <p>About</p>
+</a>
+</li>
+
+</ul>
+</nav>
+<!-- /.sidebar-menu -->
+</div>
+<!-- /.sidebar -->
+</aside>
+
+<style>
+  .sidebar {
+    height: calc(100vh - 3.5rem);
+    overflow-y: auto;
+  }
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sidebar::-webkit-scrollbar-track {
+    background: #343a40;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 3px;
+  }
+  .nav-header {
+    color: #adb5bd;
+    font-size: 0.7rem;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+    border-bottom: 1px solid #495057;
+  }
+  .brand-link.text-center {
+    text-align: center;
+  }
+  .brand-link.text-center .brand-text {
+    display: block;
+    margin-top: 5px;
+  }
+  .user-panel .info small {
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 2px;
+  }
+  .nav-child-indent .nav-treeview {
+    padding-left: 1rem;
+  }
+  .sidebar-search {
+    margin-bottom: 1rem;
+  }
+</style>
+
+<script>
+  $(document).ready(function() {
+  // Sidebar search functionality
+    $('#sidebarSearch').on('keyup', function() {
+      const searchText = $(this).val().toLowerCase();
+      $('.nav-item').each(function() {
+        const $item = $(this);
+        const text = $item.text().toLowerCase();
+        
+        if (text.includes(searchText)) {
+          $item.show();
+        // Expand parent if it's a treeview item
+          if ($item.closest('.nav-treeview').length) {
+            $item.closest('.menu-open, .nav-item').addClass('menu-open');
+          }
+        } else {
+        // Don't hide section headers or active items
+          if (!$item.hasClass('nav-header') && !$item.find('.nav-link').hasClass('active')) {
+            $item.hide();
+          }
+        }
+      });
+      
+    // Show all if search is empty
+      if (searchText === '') {
+        $('.nav-item').show();
+      }
+    });
+
+  // Auto-expand active menu item
+    $('.nav-link.active').each(function() {
+      $(this).closest('.nav-treeview').parent().addClass('menu-open');
+    });
+
+  // Store sidebar state in localStorage
+    $('.nav-item > .nav-link').on('click', function() {
+      const $parent = $(this).parent();
+      if ($parent.hasClass('menu-open')) {
+        localStorage.removeItem('sidebar_' + $(this).attr('href'));
+      } else {
+        localStorage.setItem('sidebar_' + $(this).attr('href'), 'open');
+      }
+    });
+
+  // Restore sidebar state from localStorage
+    $('.nav-item > .nav-link').each(function() {
+      if (localStorage.getItem('sidebar_' + $(this).attr('href')) === 'open') {
+        $(this).parent().addClass('menu-open');
+      }
+    });
+
+  // Image error handling
+    $('.user-panel img').on('error', function() {
+      $(this).attr('src', '/static/assets/img/default-user.png');
+    });
+  });
+</script>

@@ -1,0 +1,154 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}All Locations List{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{# --- Stylesheets --- #}
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+{# DataTables CSS #}
+<link rel="stylesheet" href="/static/assets/plugins/datatables/dataTables.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/datatables/fixedColumns.dataTables.min.css">
+{% endblock %}
+
+{# --- Main Content --- #}
+{% block content %}
+<div class="content-wrapper">
+
+    {# Flash Messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3" id="flashMessageContainer">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <strong>{{ message }}</strong>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {# Content Header #}
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6"><h1>All Locations</h1></div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/index">Home</a></li>
+                        <li class="breadcrumb-item active">Locations</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    {# Main Content: Data Table #}
+    <section class="content">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Location & Room Details</h3>
+                    <div>
+                        <a href="{{ url_for('locations_blueprint.add_location') }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus-circle"></i> Add New Location
+                        </a>
+                        <a href="{{ url_for('locations_blueprint.managed_locations') }}" class="btn btn-sm btn-info">
+                            <i class="fas fa-sync-alt"></i> Refresh List
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="card-body table-responsive">
+                    <table id="locationsTable" class="display nowrap stripe" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Location Name</th>
+                                <th>Type</th>
+                                <th>Parent Location</th>
+                                <th>Capacity</th>
+                                <th>Description</th>
+                                <th>Edit</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loc in locations_list %}
+                            <tr>
+                                <td>{{ loc.location_name or 'N/A' }}</td>
+                                <td>{{ loc.location_type or 'N/A' }}</td>
+                                <td>{{ loc.parent_name or 'Top Level' }}</td>
+                                <td>{{ loc.room_capacity or '—' }}</td>
+                                <td>{{ loc.room_description | default('N/A', true) | truncate(50, true) }}</td>
+                                <td>
+                                    <a href="{{ url_for('locations_blueprint.edit_location', location_id=loc.location_id) }}"
+                                        class="btn btn-sm btn-warning"
+                                        aria-label="Edit {{ loc.location_name }}">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if session['role'] == 'admin' %}
+                                    <a href="{{ url_for('locations_blueprint.delete_location', location_id=loc.location_id) }}"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Delete {{ loc.location_name }}? This will also unassign any assets linked to it.')"
+                                        aria-label="Delete {{ loc.location_name }}">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">Admin Only</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{# --- Javascripts --- #}
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery-3.6.0.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/plugins/datatables/dataTables.min.js"></script>
+<script src="/static/assets/plugins/datatables/fixedColumns.dataTables.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize DataTables with fixed column settings
+        $('#locationsTable').DataTable({
+            scrollX: true,
+            scrollY: '300px',
+            scrollCollapse: true,
+            paging: false,
+            fixedColumns: {
+                left: 1
+            },
+            columnDefs: [
+                // Set a width for the description column
+                { targets: 4, width: "200px" }
+            ]
+        });
+
+        // Animate flash messages
+        const flashContainer = $('#flashMessageContainer');
+        if (flashContainer.length) {
+            flashContainer.fadeIn(500).delay(3000).fadeOut(1000);
+        }
+    });
+</script>
+{% endblock %}

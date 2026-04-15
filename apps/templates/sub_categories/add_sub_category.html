@@ -1,0 +1,116 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add Section{% endblock %}
+
+{% block body_class %}sidebar-mini layout-fixed layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 90%;
+    display: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1>Add Section</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/categories">Section</a></li>
+            <li class="breadcrumb-item active">Add Section</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary">
+        <div class="card-header"><h3 class="card-title">Create a New Section</h3></div>
+
+        <form action="{{ url_for('sub_categories_blueprint.add_sub_category') }}" method="POST">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+          <div class="card-body">
+            <!-- Category Selection -->
+            <div class="form-group">
+              <label for="category_id">Select a Department</label>
+              <select name="category_id" id="category_id" class="form-control select2" required>
+                <option value="" disabled selected>Select a Department</option>
+                {% for i in categories %}
+                  <option value="{{ i.CategoryID  }}">{{ i.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Sub Category Name -->
+            <div class="form-group">
+              <label for="name">Section Name</label>
+              <input type="text" name="name" id="name" class="form-control" placeholder="Enter Section name" required>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea name="description" id="description" class="form-control" rows="3" placeholder="Enter description" required></textarea>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="/categories" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/plugins/select2/js/select2.full.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('.select2').select2();
+    $('#flashMessageContainer').fadeIn(300).delay(3000).fadeOut(1000);
+  });
+</script>
+{% endblock %}

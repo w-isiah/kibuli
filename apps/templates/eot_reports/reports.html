@@ -1,0 +1,304 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Assessment Report{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" rel="stylesheet">
+
+<!-- FontAwesome & Ionicons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+<link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" />
+
+<!-- AdminLTE & Custom Styles -->
+<link href="/static/assets/css/adminlte.min.css" rel="stylesheet" />
+<link href="/static/assets/css/mine.css" rel="stylesheet" />
+
+<!-- Select2 -->
+<link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+
+<!-- DataTables -->
+<link href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alert-container fixed-top mt-3 mx-auto" style="max-width:600px; z-index:1050;">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+      <i class="fas fa-{{ 
+        'check-circle' if category == 'success' else
+        'exclamation-circle' if category == 'warning' else
+        'times-circle' if category == 'danger' else
+        'info-circle'
+      }}"></i>
+      <span class="ml-2">{{ message }}</span>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1 class="m-0">Assessment Marks</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Assessment Marks</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+
+      <!-- Filter Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Filter Assessment Marks</h3>
+        </div>
+        <div class="card-body">
+          <form method="GET" action="{{ url_for('reports_blueprint.reports') }}">
+            <div class="row">
+              <!-- Class -->
+              <div class="form-group col-md-3">
+                <label for="class_id">Class</label>
+                <select name="class_id" id="class_id" class="form-control select2">
+                  <option value="">-- Select Class --</option>
+                  {% for c in class_list %}
+                  <option value="{{ c.class_id }}" {% if c.class_id == selected_class_id %}selected{% endif %}>{{ c.class_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Stream -->
+              <div class="form-group col-md-3">
+                <label for="stream_id">Stream</label>
+                <select name="stream_id" id="stream_id" class="form-control select2">
+                  <option value="">-- Select Stream --</option>
+                  {% for st in streams %}
+                  <option value="{{ st.stream_id }}" {% if st.stream_id == selected_stream_id %}selected{% endif %}>{{ st.stream_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Study Year -->
+              <div class="form-group col-md-3">
+                <label for="year_id">Study Year</label>
+                <select name="year_id" id="year_id" class="form-control select2">
+                  <option value="">-- Select Study Year --</option>
+                  {% for y in study_years %}
+                  <option value="{{ y.year_id }}" {% if y.year_id == selected_study_year_id %}selected{% endif %}>{{ y.year_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Term -->
+              <div class="form-group col-md-3">
+                <label for="term_id">Term</label>
+                <select name="term_id" id="term_id" class="form-control select2">
+                  <option value="">-- Select Term --</option>
+                  {% for t in terms %}
+                  <option value="{{ t.term_id }}" {% if t.term_id == selected_term_id %}selected{% endif %}>{{ t.term_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Subject -->
+              <div class="form-group col-md-3">
+                <label for="subject_id">Subject</label>
+                <select name="subject_id" id="subject_id" class="form-control select2">
+                  <option value="">-- Select Subject --</option>
+                  {% for s in subjects %}
+                  <option value="{{ s.subject_id }}" {% if s.subject_id == selected_subject_id %}selected{% endif %}>{{ s.subject_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Assessment -->
+              <div class="form-group col-md-3">
+                <label for="assessment_name">Assessment</label>
+                <select name="assessment_name" id="assessment_name" class="form-control select2">
+                  <option value="">-- Select Assessment --</option>
+                  {% for a in assessments %}
+                  <option value="{{ a.assessment_name }}" {% if a.assessment_name == selected_assessment_name %}selected{% endif %}>{{ a.assessment_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+
+              <!-- Pupil Full Name -->
+              <div class="form-group col-md-3">
+                <label for="pupil_name">Pupil Full Name</label>
+                <select name="pupil_name" id="pupil_name" class="form-control select2">
+                  <option value="">-- Select Pupil --</option>
+                  {% for p in pupils %}
+                  {% set full_name = (p.first_name ~ ' ' ~ (p.other_name or '') ~ ' ' ~ p.last_name).strip() %}
+                  <option value="{{ full_name }}" {% if full_name == selected_pupil_name %}selected{% endif %}>{{ full_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Reg No -->
+              <div class="form-group col-md-3">
+                <label for="reg_no">Registration Number</label>
+                <input type="text" name="reg_no" id="reg_no" class="form-control" value="{{ entered_reg_no or '' }}" placeholder="Enter Reg No">
+              </div>
+
+
+              <!-- Filter Button -->
+              <div class="form-group col-md-6 d-flex align-items-end justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-search"></i> Filter Results
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Results and Delete Form -->
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title">Pupil Performance</h3>
+        </div>
+
+        <form method="POST" action="{{ url_for('reports_blueprint.delete_scores') }}" id="deleteForm">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="card-body">
+            {% if session['role'] == 'admin' %}
+            <div class="form-group mb-3">
+              <label for="deletion_notes" class="mb-1">Notes for deletion <span class="text-danger">*</span></label>
+              <textarea name="deletion_notes" id="deletion_notes" class="form-control" rows="2" placeholder="Add reason or notes for deleting selected scores..." required></textarea>
+            </div>
+
+ 
+            <button type="submit" class="btn btn-danger btn-sm mb-3" onclick="return confirm('Are you sure you want to delete selected marks?')">
+              <i class="fas fa-trash-alt"></i> Delete Selected
+            </button>   
+             {% endif %}
+
+            <div class="table-responsive p-0" style="max-height: 400px;">
+              <table id="reportTable" class="stripe row-border order-column" style="width:100%">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="selectAll" /></th>
+                   
+                    <th>Full Name</th>
+                     <th>Reg No</th>
+                    <th>Year</th>
+                    <th>Term</th>
+                    <th>Stream</th>
+                    <th>Assessment</th>
+                    <th>Subject</th>
+                    <th>Mark</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for report in reports %}
+                  <tr>
+                    <td><input type="checkbox" name="score_ids" value="{{ report.score_id }}" /></td>
+                    <td>{{ report.full_name }}</td>
+                    <td>{{ report.reg_no }}</td>
+                    
+                    <td>{{ report.year_name }}</td>
+                    <td>{{ report.term_name }}</td>
+                    <td>{{ report.stream_name }}</td>
+                    <td>{{ report.assessment_name }}</td>
+                    <td>{{ report.subject_name }}</td>
+                    <td>{{ report.Mark }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Bootstrap Bundle -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- AdminLTE -->
+<script src="/static/assets/js/adminlte.js"></script>
+
+<!-- DataTables & Extensions -->
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+
+<!-- Select2 -->
+<script src="/static/assets/js/select2.min.js"></script>
+
+<!-- Custom JS -->
+<script src="/static/assets/js/mine.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+  $(function () {
+      // Initialize Select2
+      $('.select2').select2();
+
+      // Initialize DataTable with fixed columns and scrolling
+      $('#reportTable').DataTable({
+      fixedColumns: {
+        left: 2,
+        
+      },
+      paging: false,
+      scrollCollapse: true,
+      scrollX: true,
+      scrollY: 300
+    });
+
+
+      // Select/Deselect all checkboxes
+      $('#selectAll').on('click', function () {
+        $('input[name="score_ids"]').prop('checked', this.checked);
+      });
+
+      // Auto dismiss flash messages after 5 seconds
+      $('.alert').delay(5000).fadeTo(1000, 0).slideUp(500, function () {
+        $(this).alert('close');
+      });
+
+      // Prevent delete form submission if no scores selected
+      $('#deleteForm').on('submit', function (e) {
+        if ($('input[name="score_ids"]:checked').length === 0) {
+          alert('No scores selected for deletion.');
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
+  {% endblock %}

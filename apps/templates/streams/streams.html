@@ -1,0 +1,211 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" rel="stylesheet">
+
+<!-- Icons & Fonts -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
+
+<!-- Stylesheets -->
+<link href="/static/assets/css/adminlte.min.css" rel="stylesheet">
+<link href="/static/assets/css/mine.css" rel="stylesheet">
+<link href="/static/assets/css/select2.min.css" rel="stylesheet">
+
+<!-- DataTables -->
+<link href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css" rel="stylesheet">
+<link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+    }
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+                'check-circle' if category == 'success' else 
+                'exclamation-circle' if category == 'warning' else 
+                'times-circle' if category == 'danger' else 
+                'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Headers -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Stream List</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Streams</li>
+          </ol>
+        </div>
+      </div>
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1 class="mb-0">Manage Streams</h1>
+        </div>
+        <div class="col-sm-6 text-sm-right">
+          <a href="/add_stream" class="btn btn-success">
+            <i class="fas fa-plus-circle mr-1"></i> Add a Stream
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Table -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Stream List</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table id="categoriesTable" class="display nowrap stripe" style="width:100%">
+                  <thead >
+                    <tr>
+                      <th>Stream Name</th>
+                      <th>Class</th>
+                      <th>Description</th>
+                      <th>Room</th>
+                      <th>Teacher In Charge</th>
+                      <th>Created At</th>
+                      <th>Updated At</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for stream in streams %}
+                    <tr>
+                      <td>{{ stream.stream_name }}</td>
+                      <td>{{ stream.class_name }}</td>
+                      <td>{{ stream.description or "—" }}</td>
+                      <td>{{ stream.room_name or "—" }}</td>
+                      <td>
+                        {% if stream.teacher_username %}
+                          {{ stream.teacher_username }}
+                        {% else %}
+                          <em>N/A</em>
+                        {% endif %}
+                      </td>
+                      <td>{{ stream.created_at.strftime('%Y-%m-%d %H:%M') if stream.created_at else "—" }}</td>
+                      <td>{{ stream.updated_at.strftime('%Y-%m-%d %H:%M') if stream.updated_at else "—" }}</td>
+                      <td>
+                        <a href="/edit_stream/{{ stream.stream_id }}" class="btn btn-sm btn-warning">Edit</a>
+                      </td>
+                      <td>
+                        {% if session['role'] == 'super_admin' %}
+                          <a href="/delete_stream/{{ stream.stream_id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete {{ stream.stream_name }}?')">Delete</a>
+                        {% else %}
+                          <span>—</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Bootstrap Bundle -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- AdminLTE -->
+<script src="/static/assets/js/adminlte.js"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+
+<!-- Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
+<!-- Custom JS -->
+<script src="/static/assets/js/mine.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#categoriesTable').DataTable({
+      fixedColumns: { left: 1, right: 2 },
+      paging: false,
+      scrollX: true,
+      scrollY: '300px',
+      scrollCollapse: true,
+      stateSave: true
+    });
+
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

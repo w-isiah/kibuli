@@ -1,0 +1,262 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Fonts -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+<!-- Icons -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+<!-- Theme -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.0/css/dataTables.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.min.css">
+
+<!-- Plugins -->
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+
+<!-- Custom Styles -->
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+
+  <!-- Flash Message Styles -->
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{
+              'check-circle' if category == 'success' else
+              'exclamation-circle' if category == 'warning' else
+              'times-circle' if category == 'danger' else
+              'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Identity Cards List</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/Identity Cards">Identity Cards</a></li>
+            <li class="breadcrumb-item active">Identity Cards List</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Identity Cards List</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table id="categoriesTable" class="stripe row-border order-column" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>Generate ID</th>
+                      <th>Reg No</th>
+                      <th>Pupil</th>
+                      <th>Pupil Image</th>
+                      <th>Gender</th>
+                      <th>Class</th>
+                      <th>Father</th>
+                      <th>Father Image</th>
+                      <th>Father Signature</th>
+                      <th>Mother</th>
+                      <th>Mother Image</th>
+                      <th>Mother Signature</th>
+                      <th>Guardian</th>
+                      <th>Guardian Image</th>
+                      <th>Guardian Signature</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in gen_id %}
+                      <tr>
+                        <td>
+                          <a href="{{ url_for('gen_ids_blueprint.generate_id_card', pupil_id=row.pupil_id) }}" class="btn btn-sm btn-primary" target="_blank">View ID Card</a>
+                        </td>
+                        <td>{{ row.reg_no }}</td>
+                        <td>{{ row.pupil_first_name }} {{ row.other_name }} {{ row.pupil_last_name }}</td>
+                        <td>
+                          {% if row.pupil_image %}
+                            <img src="/static/uploads/{{ row.pupil_image }}" alt="Pupil Image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                          {% else %}
+                            <span>No Image</span>
+                          {% endif %}
+                        </td>
+                        <td>{{ row.gender }}</td>
+                        <td>{{ row.class }}</td>
+                        <td>{{ row.father_first_name }} {{ row.father_other_name }} {{ row.father_last_name }}</td>
+                        <td>
+                          {% if row.father_image %}
+                            <img src="/static/uploads/{{ row.father_image }}" alt="Father Image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                          {% else %}
+                            <span>No Image</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if row.father_sign %}
+                            <img src="/static/uploads/{{ row.father_sign }}" alt="Father Sign" style="width: 100px;">
+                          {% else %}
+                            <span>No Sign</span>
+                          {% endif %}
+                        </td>
+                        <td>{{ row.mother_first_name }} {{ row.mother_other_name }} {{ row.mother_last_name }}</td>
+                        <td>
+                          {% if row.mother_image %}
+                            <img src="/static/uploads/{{ row.mother_image }}" alt="Mother Image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                          {% else %}
+                            <span>No Image</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if row.mother_sign %}
+                            <img src="/static/uploads/{{ row.mother_sign }}" alt="Mother Sign" style="width: 100px;">
+                          {% else %}
+                            <span>No Sign</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {{ row.guardian_first_name }} {{ row.guardian_other_name }} {{ row.guardian_last_name }}<br>
+                          {{ row.relationship }} - {{ row.contact_number }}
+                        </td>
+                        <td>
+                          {% if row.guardian_image %}
+                            <img src="/static/uploads/{{ row.guardian_image }}" alt="Guardian Image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                          {% else %}
+                            <span>No Image</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if row.guardian_sign_image %}
+                            <img src="/static/uploads/{{ row.guardian_sign_image }}" alt="Guardian Sign" style="width: 100px;">
+                          {% else %}
+                            <span>No Sign</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- Core Libraries -->
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- AdminLTE -->
+<script src="/static/assets/js/adminlte.js"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/2.3.0/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+
+<!-- Plugins -->
+<script src="/static/assets/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+<!-- Custom Script -->
+<script src="/static/assets/js/mine.js"></script>
+
+
+
+  <script>
+    $(document).ready(function() {
+      
+
+
+       $('#categoriesTable').DataTable({
+      fixedColumns: {
+        left: 2,
+        right: 1
+      },
+      paging: false,
+      scrollCollapse: true,
+      scrollX: true,
+      scrollY: 300
+    });
+
+
+
+
+
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

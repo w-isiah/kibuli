@@ -1,0 +1,163 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Reciever{% endblock %}
+{% block body_class %}sidebar-mini layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- AdminLTE Theme -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    width: 80%;
+    display: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1><i class="fas fa-user-edit"></i> Edit Reciever</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/customers">Reciever</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alert-container" id="flashMessageContainer">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <i class="fas fa-{{ 
+        'check-circle' if category == 'success' 
+        else 'exclamation-triangle' if category == 'warning' 
+        else 'times-circle' if category == 'danger' 
+        else 'info-circle' }}"></i>
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-10 offset-md-1">
+
+            <div class="card card-primary">
+
+
+             <!-- Content Header -->
+             <section class="content-header">
+              <div class="container-fluid">
+                <div class="row mb-2">
+                  <div class="col-sm-6">
+                    <h1><i class="fas fa-users"></i> Reciever</h1>
+                  </div>
+                  <div class="col-sm-6 text-right">
+                    <a href="/add_customer" class="btn btn-sm btn-primary">
+                      <i class="fas fa-user-plus"></i> Add Reciever
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Form Start -->
+            <form action="{{ url_for('customers_blueprint.edit_customer', customer_id=customer.CustomerID) }}" method="POST" class="form-horizontal">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+              <div class="card-body">
+
+                <!-- Name -->
+                <div class="form-group row">
+                  <label for="name" class="col-sm-2 col-form-label">Name</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="name" id="name" class="form-control" value="{{ customer.name }}" placeholder="Enter customer name" required>
+                  </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="form-group row">
+                  <label for="contact" class="col-sm-2 col-form-label">Contact</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="contact" id="contact" class="form-control" value="{{ customer.contact }}" placeholder="Enter contact info" >
+                  </div>
+                </div>
+
+                <!-- Address -->
+                <div class="form-group row">
+                  <label for="address" class="col-sm-2 col-form-label">Address</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="address" id="address" class="form-control" value="{{ customer.address }}" placeholder="Enter address" >
+                  </div>
+                </div>
+
+                <!-- Loyalty Points -->
+                <div class="form-group row">
+                  <label for="loyaltypoints" class="col-sm-2 col-form-label">Loyalty Points</label>
+                  <div class="col-sm-10">
+                    <input type="number" name="loyaltypoints" id="loyaltypoints" class="form-control" value="{{ customer.loyaltypoints or 0 }}" placeholder="Loyalty points (optional)">
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Card Footer -->
+              <div class="card-footer text-right">
+                <a href="/customers" class="btn btn-secondary mr-2"><i class="fas fa-arrow-left"></i> Cancel</a>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Changes</button>
+              </div>
+
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+
+<script>
+  $(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3000).fadeOut(600);
+    }
+  });
+</script>
+{% endblock %}

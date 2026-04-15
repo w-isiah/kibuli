@@ -1,0 +1,235 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Product{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Ionicons -->
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<!-- AdminLTE Theme -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<!-- Content Wrapper -->
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Product</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+          
+            <li class="breadcrumb-item active">Edit Product</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Edit Form Section -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h3 class="card-title">Edit Product</h3>
+      <div class="btn-group mb-2" role="group" aria-label="Category Management">
+        <a href="/dep_head_products">
+          <button type="button" class="btn btn-sm btn-outline-primary">View Products</button>
+        </a>
+        <a href="/cat_head_add_product">
+          <button type="button" class="btn btn-sm btn-outline-primary">Add Product</button>
+        </a>
+        <a href="/p_restock">
+          <button type="button" class="btn btn-sm btn-outline-primary">Add Stock</button>
+        </a>
+        <a href="/inventory_department_head_index">
+          <button type="button" class="btn btn-sm btn-outline-primary">Inventory Dashboard</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <!-- Default box -->
+            <div class="card">
+              <div class="card-body">
+                <form action="{{ url_for('department_h_blueprint.cat_head_edit_product', product_id=product.ProductID) }}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+                  <!-- CSRF Token for security -->
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                  <!-- Category Selection -->
+                  <div class="form-group row mb-3">
+                    <label for="category_id" class="col-sm-2 col-form-label">Department:</label>
+                    <div class="col-sm-10">
+                      <select name="category_id" id="category_id" class="form-control select2"  onchange="loadSubCategories()">
+                        <option value="" disabled selected>Select Department</option>
+                        {% for category in categories %}
+                          <option value="{{ category.CategoryID }}" {% if category.CategoryID == product.category_id %} selected {% endif %}>
+                            {{ category.name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Sub Category Selection -->
+                  <div class="form-group row mb-3">
+                    <label for="sub_category_id" class="col-sm-2 col-form-label">Section:</label>
+                    <div class="col-sm-10">
+                      <select name="sub_category_id" id="sub_category_id" class="form-control select2">
+                        <option value="" disabled selected>Select Section</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- SKU Input -->
+                  <div class="form-group row mb-3">
+                    <label for="serial_no" class="col-sm-2 col-form-label">Item Number:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="serial_no" class="form-control" value="{{ product.sku }}">
+                    </div>
+                  </div>
+
+                  <!-- Product Name Input -->
+                  <div class="form-group row mb-3">
+                    <label for="name" class="col-sm-2 col-form-label">Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="name" class="form-control" value="{{ product.name }}" placeholder="Enter Product Name" required>
+                    </div>
+                  </div>
+
+
+                   <!-- Product Name Input -->
+                  <div class="form-group row mb-3">
+                    <label for="name" class="col-sm-2 col-form-label">Unique Number:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="unique_number" class="form-control" value="{{ product.unique_number }}" placeholder="Enter  Unique Number" >
+                    </div>
+                  </div>
+
+
+                
+
+                  <!-- Product Description -->
+                  <div class="form-group row mb-3">
+                    <label for="description" class="col-sm-2 col-form-label">Product Description:</label>
+                    <div class="col-sm-10">
+                      <textarea name="description" class="form-control" placeholder="Enter Product Description">{{ product.description }}</textarea>
+                    </div>
+                  </div>
+
+
+                  <!-- Current Image Display -->
+                  <div class="form-group row mb-3">
+                    <label for="image" class="col-sm-2 col-form-label">Current Image:</label>
+                    <div class="col-sm-10">
+                      {% if product.image %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ product.image) }}" alt="Product Image" style="max-width: 150px; max-height: 150px;">
+                      {% else %}
+                        <p>No image uploaded.</p>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Image Upload -->
+                  <div class="form-group row mb-3">
+                    <label for="image" class="col-sm-2 col-form-label">Upload New Image (Optional):</label>
+                    <div class="col-sm-10">
+                      <input type="file" name="image" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  {% block javascripts %}
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="/static/assets/js/demo.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+  <script>
+    // Function to load sub-categories based on selected category
+    function loadSubCategories() {
+      const categoryId = document.getElementById('category_id').value;
+      const subCategorySelect = document.getElementById('sub_category_id');
+
+      if (!categoryId) return;
+
+       $('.select2').select2();
+
+      // Make AJAX request to fetch sub-categories for the selected category
+      fetch('/cat_head_subc_data?category_id=' + categoryId)
+        .then(response => response.json())
+        .then(subCategories => {
+          // Clear existing options
+          subCategorySelect.innerHTML = '<option value="" disabled selected>Select Section</option>';
+
+          // Populate sub-category dropdown based on selected category
+          subCategories.forEach(subCategory => {
+            const option = document.createElement('option');
+            option.value = subCategory.sub_category_id;
+            option.textContent = subCategory.name;
+            subCategorySelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error fetching Sections:', error));
+    }
+
+    // Automatically load sub-categories if category is already selected
+    window.onload = function() {
+      const categoryId = document.getElementById('category_id').value;
+      if (categoryId) {
+        loadSubCategories();
+      }
+    }
+  </script>
+  {% endblock %}
+</div>
+{% endblock %}

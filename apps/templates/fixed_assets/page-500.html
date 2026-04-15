@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}500 - Server Error{% endblock %}
+{% block body_class %}hold-transition sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="/static/assets/css/adminlte.min.css" rel="stylesheet">
+<style>
+  .error-page {
+    text-align: center;
+    padding: 100px 15px;
+  }
+  .error-page h2 {
+    font-size: 100px;
+    font-weight: 700;
+    color: #f39c12;
+  }
+  .error-page h3 {
+    font-size: 30px;
+    margin-bottom: 20px;
+  }
+  .error-page p {
+    font-size: 18px;
+    color: #666;
+  }
+  .error-page .btn-home {
+    margin-top: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content">
+    <div class="error-page">
+      <h2 class="headline text-warning">500</h2>
+      <h3><i class="fas fa-exclamation-triangle text-warning"></i> Oops! Something went wrong.</h3>
+      <p>
+        We are experiencing a server error. Please try again later.<br>
+        Meanwhile, you can return to the dashboard.
+      </p>
+      <a href="/index" class="btn btn-primary btn-home">
+        <i class="fas fa-home"></i> Go to Dashboard
+      </a>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+{% endblock %}

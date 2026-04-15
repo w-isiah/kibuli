@@ -1,0 +1,218 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Fonts & Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+  <!-- Theme & Plugins -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+  <!-- Custom Styles -->
+  <style>
+    .images {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .photo {
+      width: 60px;
+      height: 60px;
+      border-radius: 10%;
+      object-fit: cover;
+      border: 2px solid #666;
+    }
+
+    .id-card-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 30px;
+      padding: 2rem;
+    }
+
+    .id-card {
+      position: relative;
+      width: 260px;
+      height: 420px;
+      padding: 15px;
+      border: 2px solid #333;
+      border-radius: 12px;
+      background: url('/static/uploads/id_image/bg.jpg') center/cover no-repeat;
+      font-family: 'Arial', sans-serif;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .id-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.1);
+      z-index: 0;
+    }
+
+    .id-card h4, .id-card h5 {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .id-card h4 { text-align:  center; font-size: 14px; color: #0056b3; }
+    .id-card h5 { font-size: 15px; color: #2e2e2e; }
+    .id-card p { font-size: 13px; margin: 4px 0; }
+    .id-card p strong { color: #333; }
+
+    .id-section, .id-details, .id-photo {
+      z-index: 1;
+      text-align: center;
+      border-top: 1px solid #ccc;
+      padding-top: 1px;
+    }
+
+    .id-section h5 { color: #00695c; }
+    .id-section p strong { color: #444; }
+    .id-section em { color: #cc0000; }
+
+    .qr-code {
+      width: 70px;
+      margin-top: 10px;
+    }
+
+    .print-button-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .print-button-container .btn {
+      background-color: #007bff;
+      border-color: #007bff;
+      color: #fff;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .no-print { display: none !important; }
+
+      @page { size: portrait; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <h1>Student ID Card</h1>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="print-button-container no-print">
+      <button class="btn btn-primary" onclick="printIDCard()">
+        <i class="fas fa-print"></i> Print ID Card
+      </button>
+    </div>
+
+    <div id="print-area">
+      <div class="id-card-container">
+
+        <!-- Front Side -->
+        <div class="id-card">
+          <div class="header">
+            <h4>AUTHORITY ID</h4>
+            <h4>SACRED HEART PRIMRY SCHOOL KYAMUSANSALA</h4>
+            <h4>BOYS SCHOOL, NAMILYANGO</h4>
+          </div>
+
+          <div class="id-section">
+            <p><strong>Child Name:</strong> {{ data.pupil_first_name }} {{ data.other_name }} {{ data.pupil_last_name }}</p>
+            <p><strong>Class:</strong> {{ data.class }}</p>
+            <p><strong>Reg. No:</strong> {{ data.reg_no }}</p>
+            <p><strong>Father's Name:</strong> {{ data.father_first_name }} {{ data.father_last_name }}</p>
+            <p><strong>Mother's Name:</strong> {{ data.mother_first_name }} {{ data.mother_last_name }}</p>
+          </div>
+
+          <div class="id-details">
+            <p><strong>Issue Date:</strong> {{ data.date_issued }}</p>
+            <p><strong>Expiry Date:</strong> {{ data.date_expiry }}</p>
+          </div>
+
+          <div class="images">
+            <img class="photo" src="/static/uploads/{{ data.pupil_image or 'default-avatar.png' }}" alt="Student Photo">
+            <img class="photo" src="/static/uploads/{{ data.father_image or 'default-avatar.png' }}" alt="Father Photo">
+            <img class="photo" src="/static/uploads/{{ data.mother_image or 'default-avatar.png' }}" alt="Mother Photo">
+          </div>
+
+          <div class="images">
+            <img class="photo" src="/static/uploads/{{ data.father_sign or 'default-avatar.png' }}" alt="Father Signature">
+            <img class="photo" src="/static/uploads/{{ data.mother_sign or 'default-avatar.png' }}" alt="Mother Signature">
+          </div>
+        </div>
+
+        <!-- Back Side -->
+        <div class="id-card">
+          <div class="id-section">
+            <p><strong>This is a property of</strong></p>
+            <p><strong>UGANDA MARTYRS JUNIOR</strong></p>
+            <p><strong>BOYS SCHOOL, NAMILYANGO</strong></p>
+            <p><strong>Location:</strong> Waka</p>
+            <p><strong>Contact:</strong> 759623689</p>
+            <p><strong>Email:</strong> @gmail.com</p>
+            <p><strong>Address:</strong> P.O.BOX 63, Masaka</p>
+          </div>
+
+          <span>Authorization Signature</span>
+          <img class="photo" src="/static/uploads/{{ data.mother_sign or 'default-avatar.png' }}" alt="Mother Signature">
+          <img class="qr-code" src="/static/uploads/qr_{{ data.pupil_id }}.png" alt="QR Code">
+
+          <div class="id-section">
+            <p>If found, please return to the address above</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.js"></script>
+
+  <script>
+    function printIDCard() {
+      window.print();
+    }
+
+    $(function () {
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add Item{% endblock %}
+
+{% block body_class %}hold-transition sidebar-mini layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container" id="flashMessageContainer">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          <strong>{{ message }}</strong>
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1>Add Item</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/products">Items</a></li>
+            <li class="breadcrumb-item active">Add Item</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mb-0">Add New Item</h3>
+          <div class="btn-group">
+            <a href="/products" class="btn btn-primary btn-sm">Item List</a>
+            <a href="/inventory_index" class="btn btn-success btn-sm">Inventory Dashboard</a>
+            <a href="/p_restock" class="btn btn-primary btn-sm">Add Stock</a>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <form action="{{ url_for('products_blueprint.add_product') }}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <!-- Category -->
+            <div class="form-group row">
+              <label for="category_id" class="col-sm-2 col-form-label">Category</label>
+              <div class="col-sm-10">
+                <select name="category_id" id="category_id" class="form-control select2" required>
+                  <option value="">Select Category</option>
+                  {% for cat in categories %}
+                    <option value="{{ cat.CategoryID }}">{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <!-- Sub Category -->
+            <div class="form-group row" id="sub_category_container" style="display: none;">
+              <label for="sub_category_id" class="col-sm-2 col-form-label">Sub Category</label>
+              <div class="col-sm-10">
+                <select name="sub_category_id" id="sub_category_id" class="form-control select2">
+                  <option value="">Select Sub Category</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- SKU -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">SKU</label>
+              <div class="col-sm-10">
+                <input type="text" name="serial_no" value="{{ random_num }}" class="form-control" required />
+              </div>
+            </div>
+
+             <!-- Name -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Unique Number</label>
+              <div class="col-sm-10">
+                <input type="text" name="unique_number" class="form-control"s/>
+              </div>
+            </div>
+
+            <!-- Name -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Name</label>
+              <div class="col-sm-10">
+                <input type="text" name="name" class="form-control" required />
+              </div>
+            </div>
+
+           
+
+            <!-- Description -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Description</label>
+              <div class="col-sm-10">
+                <textarea name="description" class="form-control"></textarea>
+              </div>
+            </div>
+
+        
+
+            <!-- Image -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Item Image</label>
+              <div class="col-sm-10">
+                <input type="file" name="image" class="form-control" accept="image/*" />
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="form-group row">
+              <div class="col-sm-12 text-end">
+                <button type="submit" class="btn btn-success">Save</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card-footer text-center">
+          Footer Content
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 dropdowns
+    $('.select2').select2();
+
+    // Flash message fade out
+    const flashMessageContainer = $('#flashMessageContainer');
+    if (flashMessageContainer.length) {
+      flashMessageContainer.fadeIn(300).delay(3000).fadeOut(1000);
+    }
+
+    // Initialize a variable to hold all sub-categories
+    let allSubCategories = [];
+
+    // Fetch sub-categories on page load
+    function loadSubCategories() {
+      fetch('/sub_category_data')
+        .then(response => response.json())
+        .then(data => {
+          allSubCategories = data;
+        })
+        .catch(error => {
+          console.error('Failed to load sub-categories:', error);
+        });
+    }
+
+    // Call the loadSubCategories function to populate the sub-categories
+    loadSubCategories();
+
+    // Event handler for category change
+    $('#category_id').on('change', function () {
+      const selectedCategoryId = $(this).val();
+      const subCategorySelect = $('#sub_category_id');
+      const subCategoryContainer = $('#sub_category_container');
+
+      // Clear existing sub-categories in the dropdown
+      subCategorySelect.empty().append('<option value="">Select Sub Category</option>');
+      subCategoryContainer.hide(); // Hide the sub-category dropdown initially
+
+      // If no category is selected, do nothing
+      if (!selectedCategoryId) return;
+
+      // Filter sub-categories based on selected category ID
+      const filteredSubCategories = allSubCategories.filter(sc => sc.category_id == selectedCategoryId);
+
+      // If there are sub-categories for the selected category
+      if (filteredSubCategories.length) {
+        // Append filtered sub-categories to the dropdown
+        filteredSubCategories.forEach(sc => {
+          subCategorySelect.append(`<option value="${sc.sub_category_id}">${sc.sub_category_name}</option>`);
+        });
+        subCategoryContainer.show(); // Show the sub-category dropdown
+      } else {
+        // If no sub-categories found, show a message
+        subCategorySelect.append('<option value="">No sub-categories available</option>');
+        subCategoryContainer.show(); // Show the sub-category dropdown
+      }
+    });
+  });
+</script>
+{% endblock javascripts %}

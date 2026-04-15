@@ -1,0 +1,220 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700&display=fallback">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="/static/assets/css/select2.min.css">
+
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1050;
+      width: 90%;
+      max-width: 600px;
+      display: none;
+    }
+    .alert i { margin-right: 8px; }
+    .btn-inline-danger {
+      color: #6f42c1;
+      border: 1px solid #6f42c1;
+    }
+    .btn-inline-danger:hover {
+      background-color: #6f42c1;
+      color: white;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'warning' else 'times-circle' if category == 'danger' else 'info-circle' }}"></i>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Title -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <h1>Manage Pupils</h1>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+
+      <!-- Filter Form -->
+      <div class="card card-primary card-outline">
+        <div class="card-body">
+          <form method="GET">
+            <div class="row">
+              <div class="col-md-3 mb-2">
+                <input type="text" name="reg_no" class="form-control" placeholder="Registration No" value="{{ filters.reg_no }}">
+              </div>
+              <div class="col-md-3 mb-2">
+                <input type="text" name="name" class="form-control" placeholder="Name" value="{{ filters.name }}">
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="class_name" class="form-control select2">
+                  <option value="">Class</option>
+                  {% for c in class_list %}
+                    <option value="{{ c.class_id }}" {% if filters.class_name == c.class_id|string %}selected{% endif %}>{{ c.class_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="stream" class="form-control select2">
+                  <option value="">Stream</option>
+                  {% for s in streams %}
+                    <option value="{{ s.stream_id }}" {% if filters.stream_name == s.stream_id|string %}selected{% endif %}>{{ s.class_name }} {{ s.stream_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="term" class="form-control select2">
+                  <option value="">Term</option>
+                  {% for t in terms %}
+                    <option value="{{ t.term_id }}" {% if filters.term == t.term_id|string %}selected{% endif %}>{{ t.term_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="study_year" class="form-control select2">
+                  <option value="">Study Year</option>
+                  {% for y in study_years %}
+                    <option value="{{ y.year_id }}" {% if filters.study_year == y.year_id|string %}selected{% endif %}>{{ y.study_year }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6 text-right mt-2">
+                <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                <a href="{{ url_for('pupils_blueprint.pupils') }}" class="btn btn-secondary btn-sm">Reset</a>
+                <a href="{{ url_for('pupils_blueprint.upload_excel') }}" class="btn btn-sm btn-inline-danger">Bulk Upload</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Pupils Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Pupil List</h3>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('dorm_reg_blueprint.dorm_reg_pupil') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="m-0">Assign Pupils to Dormitory</h5>
+              <button type="submit" class="btn btn-success btn-sm">
+                <i class="fas fa-user-plus"></i> Assign
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label for="dorm">Dormitory</label>
+              <select name="dorm" id="dorm" class="form-control select2">
+                <option value="">-- Select Dormitory --</option>
+                {% for dorm in dorms %}
+                  <option value="{{ dorm.dormitory_id }}" {% if request.form.get('dorm') == dorm.dormitory_id|string %}selected{% endif %}>{{ dorm.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="table-responsive">
+              <table id="pupilTable" class="display nowrap stripe" style="width:100%">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="select_all"> All</th>
+                    <th>Reg No</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>Term</th>
+                    <th>Study Year</th>
+                    <th>Gender</th>
+                    <th>Date of Birth</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for pupil in pupils %}
+                    <tr>
+                      <td><input type="checkbox" class="pupil_checkbox" name="pupil_ids" value="{{ pupil.pupil_id }}"></td>
+                      <td>{{ pupil.reg_no }}</td>
+                      <td>{{ pupil.first_name }} {{ pupil.other_name }} {{ pupil.last_name }}</td>
+                      <td>{{ pupil.class_name }}</td>
+                      <td>{{ pupil.term_name }}</td>
+                      <td>{{ pupil.study_year }}</td>
+                      <td>{{ pupil.gender }}</td>
+                      <td>{{ pupil.date_of_birth }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+<script src="/static/assets/js/mine.js"></script>
+<script>
+  $(document).ready(function () {
+    $('.select2').select2({ width: '100%' });
+
+    let table = $('#pupilTable').DataTable({
+      fixedColumns: { left: 1, right: 0 },
+      paging: false,
+      scrollX: true,
+      scrollY: 300,
+      scrollCollapse: true
+    });
+
+    // Corrected checkbox logic
+    $('#select_all').on('change', function () {
+      $('.pupil_checkbox').prop('checked', this.checked);
+    });
+
+    $('.pupil_checkbox').on('change', function () {
+      $('#select_all').prop('checked', $('.pupil_checkbox:checked').length === $('.pupil_checkbox').length);
+    });
+
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add Dormitory{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Fonts & Icons -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+<!-- Theme & Plugins -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+<!-- Custom Styles -->
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+              'check-circle' if category == 'success' 
+              else 'exclamation-circle' if category == 'warning' 
+              else 'times-circle' if category == 'danger' 
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Add Dormitory</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/dorms">Dormitories</a></li>
+            <li class="breadcrumb-item active">Add Dormitory</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Add New Dormitory</h3>
+            </div>
+
+            <div class="card-body">
+              <form action="{{ url_for('dorms_blueprint.add_dorms') }}" method="POST" class="form-horizontal">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Dormitory Name -->
+                <div class="row mb-3">
+                  <label for="name" class="col-sm-2 col-form-label">Name:</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="name" class="form-control" placeholder="Dormitory Name" required>
+                  </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="row mb-3">
+                  <label for="gender" class="col-sm-2 col-form-label">Gender:</label>
+                  <div class="col-sm-10">
+                    <select name="gender" class="form-control" required>
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Mixed">Mixed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Room Selection -->
+                <div class="row mb-3">
+                  <label for="room_id" class="col-sm-2 col-form-label">Room:</label>
+                  <div class="col-sm-10">
+                    <select name="room_id" class="form-control" required>
+                      <option value="">Select Room</option>
+                      {% for room in rooms %}
+                      <option value="{{ room.room_id }}">{{ room.room_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="row mb-3">
+                  <label for="description" class="col-sm-2 col-form-label">Description:</label>
+                  <div class="col-sm-10">
+                    <textarea name="description" class="form-control" rows="3" placeholder="Short description..."></textarea>
+                  </div>
+                </div>
+
+
+                 <!-- teacher Selection -->
+                <div class="row mb-3">
+                  <label for="dorm_master_id" class="col-sm-2 col-form-label">Matron / Master:</label>
+                  <div class="col-sm-10">
+                    <select name="dorm_master_id" class="form-control" required>
+                      <option value="">Select teacher</option>
+                      {% for teacher in teachers %}
+                      <option value="{{ teacher.teacher_id }}">{{ teacher.first_name}} {{ teacher.last_name}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-sm btn-success">Save</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card-footer">Footer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script>
+  $(document).ready(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+{% endblock %}

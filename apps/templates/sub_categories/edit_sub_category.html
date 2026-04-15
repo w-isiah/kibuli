@@ -1,0 +1,152 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Section{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- AdminLTE -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- Select2 -->
+  <link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+  <style>
+    #flash-container {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      z-index: 1055;
+      min-width: 300px;
+    }
+  </style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  <div id="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit a Section</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-end">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Section</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title">Update a Section</h3>
+          <a href="{{ url_for('sub_categories_blueprint.sub_categories') }}" class="btn btn-outline-primary btn-sm">Back</a>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('sub_categories_blueprint.edit_sub_category', sub_category_id=sub_category.sub_category_id) }}" method="POST" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                class="form-control"
+                value="{{ sub_category.name }}"
+                required
+              >
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                class="form-control"
+                rows="4"
+                required
+              >{{ sub_category.description }}</textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="category_id" class="form-label">Department</label>
+              <select
+                id="category_id"
+                name="category_id"
+                class="form-control select2"
+                required
+                style="width: 100%;"
+              >
+                <option value="" disabled>Select a category</option>
+                {% for category in categories %}
+                  <option value="{{ category.CategoryID }}" {% if category.CategoryID == sub_category.category_id %}selected{% endif %}>
+                    {{ category.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="text-end">
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-save me-1"></i> Save Changes
+              </button>
+              <a href="{{ url_for('sub_categories_blueprint.sub_categories') }}" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Initialize Select2
+    $('.select2').select2();
+
+    // Auto-dismiss flash messages after 4 seconds
+    const flashAlerts = document.querySelectorAll('#flash-container .alert');
+    flashAlerts.forEach(alert => {
+      setTimeout(() => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+      }, 4000);
+    });
+  });
+</script>
+{% endblock javascripts %}

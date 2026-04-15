@@ -1,0 +1,292 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Fonts -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.0/css/dataTables.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+
+<link rel="stylesheet" href="/static/assets/css/fixedColumns.dataTables.min.css">
+
+
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+
+
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alert-container" id="flashMessageContainer">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <i class="fas fa-{{ 
+        'check-circle' if category == 'success' 
+        else 'exclamation-circle' if category == 'warning' 
+        else 'times-circle' if category == 'danger' 
+        else 'info-circle' }}"></i>
+        <span>{{ message }}</span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <section class="content-header">
+      <div class="container-fluid">
+
+        <h1>Manage Learners</h1>
+
+      </div>
+    </section>
+
+    <!-- Search Filters -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Search Filters</h3></div>
+          <div class="card-body">
+            <form method="get">
+              <div class="row">
+
+
+                <div class="col-md-3 mb-2">
+                  <input type="text" name="reg_no" class="form-control" placeholder="Reg No" value="{{ filters.reg_no }}">
+                </div>
+                <div class="col-md-3 mb-2">
+                  <input type="text" name="emis_number" class="form-control" placeholder="EMIS Number" value="{{ filters.emis_number }}">
+                </div>
+                <div class="col-md-3 mb-2">
+                  <input type="text" name="name" class="form-control" placeholder="Name" value="{{ filters.name }}">
+                </div>
+                <div class="col-md-3 mb-2">
+                  <select name="class_name" class="form-control select2" style="width: 100%;">
+                    <option value="">All Classes</option>
+                    {% for class in class_list %}
+                    <option value="{{ class.class_id }}" {% if filters.class_name == class.class_id|string %}selected{% endif %}>{{ class.class_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="col-md-3 mb-2">
+                  <select name="stream_id" class="form-control select2" style="width: 100%;">
+                    <option value="">All Streams</option>
+                    {% for stream in stream_list %}
+                    <option value="{{ stream.stream_id }}" {% if filters.stream_id == stream.stream_id|string %}selected{% endif %}>
+                      {{ stream.stream_name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="col-md-3 mb-2">
+                  <select name="study_year" class="form-control select2" style="width: 100%;">
+                    <option value="">All Study Years</option>
+                    {% for year in study_years %}
+                    <option value="{{ year.year_id }}" {% if filters.study_year == year.year_id|string %}selected{% endif %}>{{ year.study_year }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <select name="term" class="form-control select2" style="width: 100%;">
+                    <option value="">All Terms</option>
+                    {% for term in terms %}
+                    <option value="{{ term.term_id }}" {% if filters.term == term.term_id|string %}selected{% endif %}>{{ term.term_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <select name="residential_status" class="form-control select2">
+                    <option value="">All Statuses</option>
+                    <option value="day" {% if filters.residential_status == 'day' %}selected{% endif %}>Day</option>
+                    <option value="boarding" {% if filters.residential_status == 'boarding' %}selected{% endif %}>Boarding</option>
+                  </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <input type="text" name="nin_number" class="form-control" placeholder="NIN Number" value="{{ filters.nin_number }}">
+                </div>
+                <div class="col-md-3 mb-2">
+                  <input type="text" name="home_district" class="form-control" placeholder="Home District" value="{{ filters.home_district }}">
+                </div>
+
+                <div class="col-md-3 mb-2">
+                  <input type="text" name="index_number" class="form-control" placeholder="Index Number" value="{{ filters.index_number }}">
+                </div>
+
+
+
+              </div>
+              <div class="mt-3 d-flex flex-wrap justify-content-end">
+                <button type="submit" class="btn btn-primary mr-2 mb-2"><i class="fas fa-search"></i> Search</button>
+                <a href="{{ url_for('pupils_blueprint.pupils') }}" class="btn btn-secondary mr-2 mb-2">Reset</a>
+                {% if session['role'] == 'admin' or session['role'] == 'super_admin' %}
+                <a href="{{ url_for('pupils_blueprint.add_pupil') }}" class="btn btn-info mr-2 mb-2">Add Learner</a>
+                <a href="{{ url_for('pupils_blueprint.upload_excel') }}" class="btn btn-danger mr-2 mb-2">Bulk Upload</a>
+                <a id="exportExcelButton" class="btn btn-success mb-2">Export to Excel</a>
+                {% endif %}
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<section class="content">
+  <div class="container-fluid">
+    <div class="card">
+      <form method="POST" action="{{ url_for('pupils_blueprint.delete_pupil') }}" id="deleteForm">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        <div class="card-body">
+          {% if pupils %}
+          <div class="table-responsive">
+            <table id="example" class="stripe row-border order-column" style="width:100%">
+              <thead class="thead-dark">
+                <tr>
+                  <th><input type="checkbox" id="select_all"> Select All</th>
+                  <th>Full Name</th>
+                  <th>Reg No</th>
+                  <th>Index Number</th>
+                  <th>EMIS Number</th>   
+                  <th>Gender</th>
+                  <th>Date of Birth</th>
+                  <th>Admission Date</th>
+                  <th>Class</th>
+                  <th>Stream</th>
+                  <th>Study Year</th>
+                  <th>Term</th>
+                  <th>NIN Number</th>
+                  <th>Residential Status</th>
+                  <th>Home District</th>
+                  <th>Image</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pupil in pupils %}
+                <tr>
+                  <td><input type="checkbox" class="pupil_checkbox" name="pupil_ids" value="{{ pupil.pupil_id }}"></td>
+                  <td>{{ pupil.full_name }}</td>
+                  <td>{{ pupil.reg_no }}</td>
+                  <td>{{ pupil.index_number }}</td>
+                  <td>{{ pupil.emis_number }}</td>
+                  <td>{{ pupil.gender }}</td>
+                  <td>{{ pupil.date_of_birth }}</td>
+                  <td>{{ pupil.admission_date }}</td>
+                  <td>{{ pupil.class_name }}</td>
+                  <td>{{ pupil.stream_name }}</td>
+                  <td>{{ pupil.study_year }}</td>
+                  <td>{{ pupil.term_name }}</td>
+                  <td>{{ pupil.nin_number }}</td>
+                  <td>{{ pupil.residential_status|capitalize }}</td>
+                  <td>{{ pupil.home_district }}</td>
+                  <td>
+                    {% if pupil.image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ pupil.image) }}" style="max-width: 50px;" alt="Image">
+                    {% else %}No image{% endif %}
+                  </td>
+                  <td>
+                    <a href="{{ url_for('pupils_blueprint.edit_pupil', pupil_id=pupil.pupil_id) }}" class="btn btn-sm btn-info">Edit</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>No pupils found with the given criteria.</p>
+          {% endif %}
+        </div>
+
+        {% if session['role'] == 'super_admin' %}
+        <div class="card-footer text-right">
+          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the selected pupils?');">
+            <i class="fas fa-trash-alt"></i> Delete Selected
+          </button>
+        </div>
+        {% endif %}
+        
+      </form>
+    </div>
+  </div>
+</section>
+
+
+  </div>
+  {% endblock %}
+
+  {% block javascripts %}
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.js"></script>
+  <script src="https://cdn.datatables.net/2.3.0/js/dataTables.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+  <script src="/static/assets/js/select2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="/static/assets/js/mine.js"></script>
+
+  <script>
+    $('#select_all').on('change', function () {
+      $('.pupil_checkbox').prop('checked', this.checked);
+    });
+
+    $('.pupil_checkbox').on('change', function () {
+      $('#select_all').prop(
+        'checked',
+        $('.pupil_checkbox:checked').length === $('.pupil_checkbox').length
+        );
+    });
+
+    function exportTableToExcel() {
+      const table = document.getElementById('example');
+      const rows = Array.from(table.rows);
+      const headerCells = Array.from(rows[0].cells).slice(0, -1);
+      const headers = headerCells.map(cell => cell.innerText.trim());
+      const dataRows = rows.slice(1).map(row => {
+        const cells = Array.from(row.cells).slice(0, -1);
+        return cells.map(cell => cell.innerText.trim());
+      });
+      const fullData = [headers, ...dataRows];
+      const ws = XLSX.utils.aoa_to_sheet(fullData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Assessment Data');
+      XLSX.writeFile(wb, 'assessment_report.xlsx');
+    }
+
+    $(function () {
+      $('.select2').select2();
+      $('#example').DataTable({
+        fixedColumns: { left: 2,  },
+        paging: false,
+        scrollCollapse: true,
+        scrollX: true,
+        scrollY: 300
+      });
+
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+
+      $('#exportExcelButton').click(function (e) {
+        e.preventDefault();
+        exportTableToExcel();
+      });
+    });
+  </script>
+  {% endblock %}

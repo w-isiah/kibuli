@@ -1,0 +1,150 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Term Report Card{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Header Section -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1>Term Report Card</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Term Report</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Section -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-outline card-primary">
+        <div class="card-body">
+
+          <!-- School Info -->
+          <div class="text-center mb-4">
+            <h4 class="font-weight-bold">SACRED HEART PRIMARY SCHOOL - KYAMUSANSALA</h4>
+            <p>P.O. Box 1759, Masaka | Tel: 0772-848153 / 0702-253560 | Email: shps-rscjp@gmail.com</p>
+            <h5 class="text-muted">TERM {{ pupil.term_name }} - {{ pupil.year_name }} ACADEMIC REPORT CARD</h5>
+          </div>
+
+          <!-- Pupil Information -->
+          <div class="row justify-content-center mb-4">
+            <div class="col-lg-10">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <div class="row align-items-center">
+                    <div class="col-md-9">
+                      <table class="table table-sm table-borderless">
+                        <tbody>
+                          <tr><td><strong>Name:</strong> {{ pupil.full_name }}</td><td><strong>Class:</strong> {{ pupil.class_name }}</td></tr>
+                          <tr><td><strong>Reg No:</strong> {{ pupil.reg_no }}</td><td><strong>Gender:</strong> {{ pupil.gender }}</td></tr>
+                          <tr><td><strong>Dormitory:</strong> {{ pupil.dorm_id or 'N/A' }}</td><td><strong>Stream:</strong> {{ pupil.stream_name }}</td></tr>
+                          <tr><td><strong>Stream Position:</strong> {{ stream_position or '-' }}</td><td><strong>Class Position:</strong> {{ class_position or '-' }}</td></tr>
+                          <tr><td><strong>Overall Average:</strong> {{ overall_average }}</td>
+
+
+
+                         
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-md-3 text-center">
+                      {% if pupil.image %}
+                        <img src="/static/uploads/{{ pupil.image }}" class="img-thumbnail rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                      {% else %}
+                        <span class="text-muted">No Image</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assessment Scores -->
+          <div class="mb-4">
+            <h5 class="mb-3 text-center">Assessment Scores</h5>
+            <div class="table-responsive">
+              <table class="table table-bordered text-center">
+                <thead class="thead-light">
+                  <tr>
+                    <th rowspan="2">Subject</th>
+                    {% for a in assessments %}
+                      <th colspan="3">{{ a }}</th>
+                    {% endfor %}
+                    <th rowspan="2">Total</th>
+                    <th rowspan="2">Average</th>
+                  </tr>
+                  <tr>
+                    {% for a in assessments %}
+                      <th>Mark</th><th>Grade</th><th>Remark</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for s in subjects %}
+                    <tr>
+                      <td>{{ s.subject }}</td>
+                      {% for m in s.marks %}
+                        <td>{{ m.mark }}</td>
+                        <td>{{ m.grade }}</td>
+                      {% endfor %}
+                      <td>{{ s.total }}</td>
+                      <td>{{ s.average }}</td>
+                      <td>{{ s.grade }}</td>
+                      <td>{{ s.remark }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot>
+                  <tr class="bg-light">
+                    <td colspan="{{ assessments|length * 3 + 1 }}"><strong>Overall Average</strong></td>
+                    <td><strong>{{ overall_average }}</strong></td>
+                    <td><strong>{{ overall_grade }}</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Signatures Section -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <p class="border-top pt-2">Teacher's Signature: ____________________________</p>
+            </div>
+            <div class="col-md-6">
+              <p class="border-top pt-2">Head Teacher's Signature: ____________________________</p>
+            </div>
+          </div>
+
+          <!-- Footer Section -->
+          <div class="text-center text-muted">
+            <p><strong>Next Term Begins:</strong> {{ next_term_date or 'Date not available' }}</p>
+            <p><strong>Printed On:</strong> {{ print_date.strftime('%Y-%m-%d') }}</p>
+            <p><em>“Striving for Excellence!”</em></p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

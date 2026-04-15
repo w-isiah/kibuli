@@ -1,0 +1,154 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Class List {% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 500px;
+      width: 90%;
+      display: none;
+    }
+    .alert { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    /* Compact buttons for table actions */
+    .btn-xs { padding: .25rem .5rem; font-size: .75rem; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  
+  {# Flash Messages #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}times-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} mr-2"></i>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Class Management</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active">Classes</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-outline card-primary">
+        <div class="card-header d-flex align-items-center">
+          <h3 class="card-title">All Registered Classes</h3>
+          <div class="card-tools ml-auto">
+            <a href="/add_classes" class="btn btn-success btn-sm">
+              <i class="fas fa-plus mr-1"></i> Add New Class
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="table-responsive">
+            <table id="classesTable" class="table table-hover table-striped nowrap" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Class Name</th>
+                  <th>Teacher</th>
+                  <th>Academic Year</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for class in classes %}
+                <tr>
+                  <td><strong>{{ class.class_name }}</strong></td>
+                  <td>{{ class.teacher_first_name }} {{ class.teacher_last_name }}</td>
+                  <td><span class="badge badge-info">{{ class.year }}</span></td>
+                  <td class="text-center">
+                    <div class="btn-group">
+                      <a href="/edit_classes/{{ class.class_id }}" class="btn btn-warning btn-xs mr-1" title="Edit">
+                        <i class="fas fa-edit"></i> Edit
+                      </a>
+                      
+                      {% if session['role'] == 'super_admin' %}
+                      <a href="/delete_classes/{{ class.class_id }}" 
+                         class="btn btn-danger btn-xs" 
+                         onclick="return confirm('Delete {{ class.class_name }}? This action cannot be undone.')">
+                        <i class="fas fa-trash"></i> Delete
+                      </a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+
+  <script>
+    $(document).ready(function() {
+      // Initialize DataTable
+      const table = $('#classesTable').DataTable({
+        "responsive": true,
+        "autoWidth": false,
+        "order": [[0, "asc"]],
+        "language": {
+          "search": "Filter classes:"
+        }
+      });
+
+      // Handle Flash Messages
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400);
+        setTimeout(function() {
+          $flash.fadeOut(600);
+        }, 4000);
+      }
+    });
+  </script>
+{% endblock %}

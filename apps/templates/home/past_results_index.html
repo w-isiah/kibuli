@@ -1,0 +1,164 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Header -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0 text-dark">Dashboard</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Dashboard</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alert-container" id="flashMessageContainer">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <strong>{{ message }}</strong>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+
+
+ 
+
+
+  
+
+
+          <!-- VD Reports -->
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-teal">
+            <div class="inner">
+              <h5>Grade Count Analysis</h5>
+              <p>Count</p>
+            </div>
+            <div class="icon"><i class="fas fa-file-lines"></i></div>
+            <a href="/grade_count_analysis" class="small-box-footer">
+              More Info <i class="fas fa-angle-double-right"></i>
+            </a>
+          </div>
+        </div>
+
+
+
+
+ 
+        <!-- Stream Positions -->
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-lightblue">
+            <div class="inner">
+              <h5>Stream Positions</h5>
+              <p>P4 To P7</p>
+            </div>
+            <div class="icon"><i class="fas fa-ranking-star"></i></div>
+            <a href="{{ url_for('past_reports_blueprint.scores_positions_past_reports') }}" class="small-box-footer">
+              View More <i class="fas fa-arrow-circle-right"></i>
+            </a>
+          </div>
+        </div>
+
+
+
+
+
+
+
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-lightblue">
+            <div class="inner">
+              <h5>Stream Positions</h5>
+              <p>P1 To P2</p>
+            </div>
+            <div class="icon"><i class="fas fa-ranking-star"></i></div>
+            <a href="{{ url_for('reports_blueprint.scores_positions_reports_2') }}" class="small-box-footer">
+              View More <i class="fas fa-arrow-circle-right"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-lightblue">
+            <div class="inner">
+              <h5>Stream Positions</h5>
+              <p>P3</p>
+            </div>
+            <div class="icon"><i class="fas fa-ranking-star"></i></div>
+            <a href="{{ url_for('reports_blueprint.scores_positions_reports_3') }}" class="small-box-footer">
+              View More <i class="fas fa-arrow-circle-right"></i>
+            </a>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script>
+  $(document).ready(function() {
+    if ($('#flashMessageContainer').length) {
+      $('#flashMessageContainer').fadeIn(500).delay(3000).fadeOut(1000);
+    }
+  });
+</script>
+{% endblock %}

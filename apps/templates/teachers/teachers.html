@@ -1,0 +1,194 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Teachers List{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: 90%;
+      max-width: 600px;
+      display: none;
+    }
+    .dataTables_wrapper {
+      overflow: auto;
+    }
+    th, td {
+      white-space: nowrap;
+    }
+    img.table-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'warning' else 'times-circle' if category == 'danger' else 'info-circle' }}"></i>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Teachers List</h1>
+        </div>
+        <div class="col-sm-6 text-right">
+          <a href="/add_teacher" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i> Add Teacher
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-body table-responsive">
+          <table id="teachersTable" class="display nowrap" style="width:100%">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Number</th>
+                <th>First</th>
+                <th>Last</th>
+                <th>Other Name</th>
+                <th>Name SF</th>
+                <th>DOB</th>
+                <th>Gender</th>
+                <th>Specialty</th>
+                <th>Grade</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>Hire Date</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Photo</th>
+                <th>Signature</th>
+                <th>Edit</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for teacher in teachers %}
+              <tr>
+                <td>{{ teacher.teacher_id }}</td>
+                <td>{{ teacher.teacher_number }}</td>
+                <td>{{ teacher.first_name }}</td>
+                <td>{{ teacher.last_name }}</td>
+                <td>{{ teacher.other_name }}</td>
+                <td>{{ teacher.name_sf }}</td>
+                <td>{{ teacher.date_of_birth }}</td>
+                <td>{{ teacher.gender }}</td>
+                <td>{{ teacher.subject_specialty }}</td>
+                <td>{{ teacher.grade_level }}</td>
+                <td>{{ teacher.contact_number }}</td>
+                <td>{{ teacher.email }}</td>
+                <td>{{ teacher.hire_date }}</td>
+                <td>{{ teacher.address|truncate(40, True) }}</td>
+                <td>{{ teacher.status }}</td>
+                <td>
+                  {% if teacher.image %}
+                    <img src="/static/uploads/{{ teacher.image }}" alt="Photo" class="table-img">
+                  {% else %}
+                    <span>No Image</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if teacher.sign_image %}
+                    <img src="/static/uploads/{{ teacher.sign_image }}" alt="Signature" class="table-img">
+                  {% else %}
+                    <span>No Signature</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="/edit_teacher/{{ teacher.teacher_id }}" class="btn btn-sm btn-warning">Edit</a>
+                </td>
+                <td>
+                  {% if session['role'] == 'super_admin' %}
+                    <a href="/delete_teacher/{{ teacher.teacher_id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete {{ teacher.first_name }}?')">Delete</a>
+                  {% else %}
+                    <span>—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+
+  <!-- DataTables Export to Excel scripts -->
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      $('#teachersTable').DataTable({
+        fixedColumns: { left: 1, right: 1 },
+        paging: false,
+        scrollX: true,
+        scrollY: '300px',
+        scrollCollapse: true,
+        stateSave: true,
+        dom: 'Bfrtip',
+        buttons: [
+          {
+            extend: 'excelHtml5',
+            title: 'Teachers List',
+            text: '<i class="fas fa-file-excel"></i> Export to Excel',
+            className: 'btn btn-success mb-2'
+          }
+        ]
+      });
+
+      const flashContainer = $('#flashMessageContainer');
+      if (flashContainer.length) {
+        flashContainer.fadeIn(400).delay(3000).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

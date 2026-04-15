@@ -1,0 +1,155 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Headmaster Comment{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    max-width: 600px;
+    width: 90%;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    margin-bottom: 10px;
+    padding: 0.75rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+  }
+  .alert i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+  }
+  .alert .close {
+    margin-left: auto;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{
+              'check-circle' if category == 'success'
+              else 'exclamation-circle' if category == 'warning'
+              else 'times-circle' if category == 'danger'
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Headmaster Comment</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/headmaster_comments">Headmaster Comments</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Form -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Update Comment</h3>
+            </div>
+
+            <div class="card-body">
+              <form action="{{ url_for('headmaster_comments_blueprint.edit_headmaster_comments', comment_id=comment.comment_id) }}" method="POST" class="form-horizontal">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Min Score -->
+                <div class="row mb-3">
+                  <label for="min_score" class="col-sm-2 col-form-label">Minimum Score:</label>
+                  <div class="col-sm-10">
+                    <input type="number" name="min_score" step="0.01" class="form-control" value="{{ comment.min_score }}" required>
+                  </div>
+                </div>
+
+                <!-- Max Score -->
+                <div class="row mb-3">
+                  <label for="max_score" class="col-sm-2 col-form-label">Maximum Score:</label>
+                  <div class="col-sm-10">
+                    <input type="number" name="max_score" step="0.01" class="form-control" value="{{ comment.max_score }}" required>
+                  </div>
+                </div>
+
+                <!-- Comment -->
+                <div class="row mb-3">
+                  <label for="comment" class="col-sm-2 col-form-label">Comment:</label>
+                  <div class="col-sm-10">
+                    <textarea name="comment" class="form-control" rows="3" required>{{ comment.comment }}</textarea>
+                  </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-success btn-sm">
+                    <i class="fas fa-save mr-1"></i> Update Comment
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card-footer">
+              <small class="text-muted">Make sure the score range is unique for your entries.</small>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script>
+  $(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+{% endblock javascripts %}

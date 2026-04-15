@@ -1,0 +1,372 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add Fixed Asset{% endblock %}
+{% block body_class %}hold-transition sidebar-mini layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- Select2 -->
+<link rel="stylesheet" href="/static/assets/plugins/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+<!-- bs-custom-file-input -->
+<link rel="stylesheet" href="/static/assets/plugins/bs-custom-file-input/bs-custom-file-input.min.css">
+
+<style>
+.alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 90%;
+    max-width: 500px;
+}
+.required-field::after {
+    content: " *";
+    color: #dc3545;
+}
+.asset-image-preview {
+    max-width: 200px;
+    max-height: 150px;
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    display: none;
+}
+.form-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid #007bff;
+}
+.section-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flashMessageContainer" class="alert-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show shadow" role="alert">
+            <i class="icon fas fa-{% if category == 'success' %}check{% else %}exclamation-triangle{% endif %} mr-2"></i>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Page Header -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1><i class="fas fa-plus-circle mr-2"></i>Add Fixed Asset</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/index"><i class="fas fa-home mr-1"></i>Home</a></li>
+                        <li class="breadcrumb-item"><a href="/fixed_assets">Fixed Assets</a></li>
+                        <li class="breadcrumb-item active">Add Fixed Asset</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container-fluid">
+            <form action="{{ url_for('fixed_assets_blueprint.add_fixed_asset') }}" method="POST" enctype="multipart/form-data" id="assetForm">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-tools mr-2"></i>Add New Fixed Asset</h3>
+                        <div class="card-tools">
+                            <a href="/fixed_assets" class="btn btn-sm btn-primary">
+                                <i class="fas fa-list mr-1"></i>Asset List
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- Basic Information Section -->
+                        <div class="form-section">
+                            <h5 class="section-title"><i class="fas fa-info-circle mr-2"></i>Basic Information</h5>
+                            
+                            <div class="form-group">
+                                <label class="required-field">Identification Number</label>
+                                <input type="text" name="identification_number" class="form-control" 
+                                       value="{{ request.form.get('identification_number') or random_num }}" 
+                                       required maxlength="100" placeholder="Enter identification number">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Serial Number</label>
+                                <input type="text" name="serial_number" class="form-control" 
+                                       value="{{ request.form.get('serial_number', '') }}" 
+                                       maxlength="100" placeholder="Enter serial number">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required-field">Description</label>
+                                <textarea name="description" class="form-control" rows="3" required 
+                                          placeholder="Enter asset description">{{ request.form.get('description', '') }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Location & Assignment Section -->
+                        <div class="form-section">
+                            <h5 class="section-title"><i class="fas fa-map-marker-alt mr-2"></i>Location & Assignment</h5>
+                            
+                            <div class="form-group">
+                                <label class="required-field">Department</label>
+                                <select name="department_id" id="department_id" class="form-control select2bs4" required>
+                                    <option value="">Select Department</option>
+                                    {% for d in departments %}
+                                    <option value="{{ d.department_id }}" 
+                                            {% if request.form.get('department_id') == d.department_id|string %}selected{% endif %}>
+                                        {{ d.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="section_container" style="display: none;">
+                                <label>Section</label>
+                                <select name="section_id" id="section_id" class="form-control select2bs4">
+                                    <option value="">Select Section</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Supplier</label>
+                                <select name="supplier_id" id="supplier_id" class="form-control select2bs4">
+                                    <option value="">Select Supplier</option>
+                                    {% for s in suppliers %}
+                                    <option value="{{ s.SupplierID }}" 
+                                            {% if request.form.get('supplier_id') == s.SupplierID|string %}selected{% endif %}>
+                                        {{ s.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Custodian</label>
+                                <select name="user_id" id="user_id" class="form-control select2bs4">
+                                    <option value="">Select Custodian</option>
+                                    {% for u in users %}
+                                    <option value="{{ u.id }}" 
+                                            {% if request.form.get('user_id') == u.id|string %}selected{% endif %}>
+                                        {{ u.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Status & Condition Section -->
+                        <div class="form-section">
+                            <h5 class="section-title"><i class="fas fa-clipboard-check mr-2"></i>Status & Condition</h5>
+                            
+                            <div class="form-group">
+                                <label class="required-field">Ownership Status</label>
+                                <select name="ownership_status" class="form-control select2bs4" required>
+                                    <option value="">Select Ownership Status</option>
+                                    {% for status in ['Owned', 'Leased', 'Rented', 'Financed', 'Donated'] %}
+                                    <option value="{{ status }}" 
+                                            {% if request.form.get('ownership_status') == status %}selected{% endif %}>
+                                        {{ status }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required-field">Asset Condition</label>
+                                <select name="asset_condition" class="form-control select2bs4" required>
+                                    <option value="">Select Asset Condition</option>
+                                    {% for condition in ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Damaged', 'Under Repair'] %}
+                                    <option value="{{ condition }}" 
+                                            {% if request.form.get('asset_condition') == condition %}selected{% endif %}>
+                                        {{ condition }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload Section -->
+                        <div class="form-section">
+                            <h5 class="section-title"><i class="fas fa-image mr-2"></i>Asset Image</h5>
+                            
+                            <div class="form-group">
+                                <label>Upload Asset Image</label>
+                                <div class="custom-file">
+                                    <input type="file" name="image" class="custom-file-input" id="imageInput" accept="image/*">
+                                    <label class="custom-file-label" for="imageInput">
+                                        <i class="fas fa-upload mr-2"></i>Choose image file...
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Supported formats: JPG, PNG, GIF, WEBP. Maximum size: 5MB
+                                </small>
+                            </div>
+
+                            <!-- Image Preview -->
+                            <div class="form-group">
+                                <div id="imagePreviewContainer" class="mt-2">
+                                    <img id="imagePreview" class="asset-image-preview" src="" alt="Image preview">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer text-right">
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-undo mr-2"></i>Reset
+                        </button>
+                        <button type="submit" class="btn btn-success ml-2">
+                            <i class="fas fa-save mr-2"></i>Save Asset
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/assets/js/adminlte.min.js"></script>
+<!-- Select2 -->
+<script src="/static/assets/plugins/select2/js/select2.full.min.js"></script>
+<!-- bs-custom-file-input -->
+<script src="/static/assets/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
+
+<script>
+$(function() {
+    // Initialize Select2 with Bootstrap4 theme
+    $('.select2bs4').select2({ theme: 'bootstrap4', width: '100%' });
+
+    // Initialize custom file input
+    bsCustomFileInput.init();
+
+    // Flash message handling
+    const flashContainer = $('#flashMessageContainer');
+    if (flashContainer.length) {
+        flashContainer.fadeIn(300).delay(4000).fadeOut(1000);
+    }
+
+    // Dynamic section dropdown
+    const allSections = {{ sections | tojson | safe }};
+    const preselectedSectionId = {{ request.form.get('section_id', 'null') | tojson | safe }};
+
+    function updateSections(preselect = null) {
+        const deptId = $('#department_id').val();
+        const sectionSelect = $('#section_id');
+        const sectionContainer = $('#section_container');
+
+        sectionSelect.empty().append('<option value="">Select Section</option>');
+        sectionContainer.hide();
+
+        if (!deptId) return;
+
+        const filtered = allSections.filter(s => String(s.department_id) === String(deptId));
+        if (filtered.length) {
+            filtered.forEach(sec => {
+                const selected = preselect && String(sec.section_id) === String(preselect) ? 'selected' : '';
+                sectionSelect.append(`<option value="${sec.section_id}" ${selected}>${sec.name}</option>`);
+            });
+            sectionContainer.show();
+            sectionSelect.select2({ theme: 'bootstrap4', width: '100%' });
+        }
+    }
+
+    // Image preview functionality
+    $('#imageInput').on('change', function() {
+        const file = this.files[0];
+        const preview = $('#imagePreview');
+        const container = $('#imagePreviewContainer');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.attr('src', e.target.result);
+                preview.show();
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.hide();
+        }
+    });
+
+    // Department change event
+    $('#department_id').on('change', function() { 
+        updateSections(); 
+    });
+
+    // Initialize section dropdown if department is pre-selected
+    {% if request.form.get('department_id') %}
+        updateSections(preselectedSectionId);
+    {% endif %}
+
+    // Form validation
+    $('#assetForm').on('submit', function(e) {
+        let valid = true;
+        $(this).find('[required]').each(function() {
+            if (!$(this).val().trim()) {
+                $(this).addClass('is-invalid');
+                valid = false;
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+        
+        if (!valid) {
+            e.preventDefault();
+            flashContainer.html(`
+                <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+                    <i class="icon fas fa-exclamation-triangle mr-2"></i>Please fill in all required fields.
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            `).fadeIn(300).delay(3000).fadeOut(1000);
+            $('html, body').animate({ scrollTop: $('.is-invalid').first().offset().top - 100 }, 500);
+        }
+    });
+
+    // Remove invalid class on input
+    $('input, textarea, select').on('input change', function() {
+        $(this).removeClass('is-invalid');
+    });
+});
+</script>
+{% endblock %}

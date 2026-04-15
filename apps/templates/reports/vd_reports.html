@@ -1,0 +1,290 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Progress Report | SHPS{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+{{ super() }}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+<style>
+    :root { 
+        --navy: #1a2a6c; 
+        --gold: #b8860b; 
+        --slate: #4b5563;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+
+    /* --- Filter & Picker Styling --- */
+    .filter-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .filter-header {
+        background: var(--navy);
+        color: white;
+        padding: 12px 20px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .filter-body { background: white; padding: 20px; }
+    .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate); margin-bottom: 5px; display: block; }
+    
+    /* --- Report Sheet Layout --- */
+    .report-sheet {
+        background: white;
+        width: 210mm;
+        min-height: 297mm;
+        padding: 15mm;
+        margin: 20px auto 40px auto;
+        border-top: 10px solid var(--navy);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .school-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; border-bottom: 2px solid var(--gold); padding-bottom: 15px; }
+    .school-title h1 { color: var(--navy); font-weight: 800; font-size: 24px; margin: 0; text-transform: uppercase; }
+    .motto { color: var(--gold); font-style: italic; font-weight: 600; text-align: center; font-size: 13px; }
+    
+    .student-info-grid { 
+        display: grid; grid-template-columns: repeat(2, 1fr); 
+        gap: 15px; background: var(--light-bg); 
+        padding: 15px; border-radius: 8px; margin-bottom: 20px; 
+    }
+    .info-box { border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+    .info-val { font-weight: 700; color: var(--navy); display: block; font-size: 14px; }
+
+    /* --- Performance Table --- */
+    .perf-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    .perf-table th { background: var(--navy); color: white; padding: 10px 5px; border: 1px solid white; text-transform: uppercase; font-size: 12px; }
+    .perf-table td { padding: 8px 5px; border: 1px solid var(--border-color); text-align: center; }
+    .sub-name { text-align: left !important; font-weight: 700; color: var(--navy); background: #f8fafc; }
+
+    .badge-div { background: var(--navy); color: white; padding: 10px 25px; border-radius: 50px; font-weight: 800; font-size: 22px; margin-top: 5px; }
+
+    @media print {
+        .no-print { display: none !important; }
+        body { background: white; }
+        .report-sheet { margin: 0; box-shadow: none; border: none; width: 100%; }
+        .perf-table th { background: var(--navy) !important; color: white !important; -webkit-print-color-adjust: exact; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="container-fluid p-4">
+        
+        <div class="filter-card no-print">
+            <div class="filter-header">
+                <span><i class="fas fa-filter mr-2"></i> FILTER REPORT</span>
+            </div>
+            <form method="GET" action="{{ url_for('reports_blueprint.vd_reports') }}">
+                <div class="filter-body">
+                    <div class="row">
+                        {% set select_style = "form-control select2" %}
+                        <div class="col-md-3">
+                            <label class="filter-label">Class</label>
+                            <select name="class_id" class="{{ select_style }}" required>
+                                <option value="">-- Select Class --</option>
+                                {% for c in class_list %}
+                                <option value="{{ c.class_id }}" {% if c.class_id == selected_class_id %}selected{% endif %}>{{ c.class_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="filter-label">Stream</label>
+                            <select name="stream_id" class="{{ select_style }}">
+                                <option value="">-- Select Stream --</option>
+                                {% for s in streams %}
+                                <option value="{{ s.stream_id }}" {% if s.stream_id == selected_stream_id %}selected{% endif %}>{{ s.stream_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="filter-label">Study Year</label>
+                            <select name="year_id" class="{{ select_style }}" required>
+                                <option value="">-- Select Year --</option>
+                                {% for y in study_years %}
+                                <option value="{{ y.year_id }}" {% if y.year_id == selected_study_year_id %}selected{% endif %}>{{ y.year_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="filter-label">Term</label>
+                            <select name="term_id" class="{{ select_style }}" required>
+                                <option value="">-- Select Term --</option>
+                                {% for t in terms %}
+                                <option value="{{ t.term_id }}" {% if t.term_id == selected_term_id %}selected{% endif %}>{{ t.term_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <label class="filter-label">Assessments (Multiple)</label>
+                            <select name="assessment_name" class="{{ select_style }}" multiple required>
+                                {% for a in assessments %}
+                                <option value="{{ a.assessment_name }}" {% if selected_assessment_name and a.assessment_name in selected_assessment_name %}selected{% endif %}>{{ a.assessment_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-right mt-3">
+                        <button type="submit" class="btn btn-primary px-4 font-weight-bold shadow-sm">
+                            <i class="fas fa-search mr-1"></i> FILTER
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {% if reports %}
+        <div class="filter-card no-print">
+            <div class="filter-header" style="background: var(--gold);">
+                <span><i class="fas fa-user-graduate mr-2"></i> SELECT PUPIL</span>
+                <button class="btn btn-sm btn-light font-weight-bold" onclick="window.print()">
+                    <i class="fas fa-print mr-1"></i> PRINT THIS REPORT
+                </button>
+            </div>
+            <div class="filter-body">
+                <select id="studentSelect" class="form-control select2">
+                    <option value="">-- Select Pupil to Generate Report Card --</option>
+                    {% set seen = [] %}
+                    {% for st in reports %}
+                        {% if st.reg_no not in seen %}
+                            <option value="{{ st.reg_no }}">{{ st.full_name }} ({{ st.reg_no }})</option>
+                            {% set _ = seen.append(st.reg_no) %}
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        {% endif %}
+
+        <div id="printableReportContainer">
+            </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+
+
+
+<script>
+const allReports = {{ reports | tojson }};
+const subjectNames = {{ subject_names | tojson }};
+const badgeImage = "{{ url_for('static', filename='assets/img/badge_image.jpg') }}";
+
+function renderStudentReport(regNo) {
+    const container = document.getElementById('printableReportContainer');
+    if (!regNo) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const reps = allReports.filter(r => r.reg_no === regNo);
+    reps.sort((a, b) => a.assessment_name.localeCompare(b.assessment_name));
+    const st = reps[0];
+
+    let html = `
+    <div class="report-sheet">
+        <div class="school-header">
+            <img src="${badgeImage}" style="width:90px" onerror="this.src='/static/assets/img/badge_image.jpg'">
+            <div class="text-center school-title">
+                <h1>Sacred Heart Girls' Primary</h1>
+                <div class="motto">"Education for Service"</div>
+                <div class="small text-muted">Kyamusansala, P.O.BOX 1759, Masaka | Tel: 0772-848153</div>
+            </div>
+            <img src="${st.image ? '/static/uploads/'+st.image : ''}" style="width:95px; border:2px solid var(--navy); border-radius:5px" onerror="this.style.display='none'">
+        </div>
+
+        <div class="student-info-grid">
+            <div class="info-box"><span class="filter-label">Name</span><span class="info-val">${st.full_name}</span></div>
+            <div class="info-box"><span class="filter-label">Reg No</span><span class="info-val">${st.reg_no}</span></div>
+            <div class="info-box"><span class="filter-label">Class</span><span class="info-val">${st.class_name} (${st.stream_name})</span></div>
+            <div class="info-box"><span class="filter-label">Term</span><span class="info-val">${st.term_name} ${st.year_name}</span></div>
+        </div>
+
+        <table class="perf-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width:30%">Subject</th>
+                    ${reps.map(r => `<th colspan="2">${r.assessment_name}</th>`).join('')}
+                    <th rowspan="2">Rank</th>
+                </tr>
+                <tr>
+                    ${reps.map(() => `<th>Mk</th><th>Gr</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${subjectNames.map(sub => `
+                    <tr>
+                        <td class="sub-name">${sub}</td>
+                        ${reps.map(r => `
+                            <td>${r.marks[sub] || '-'}</td>
+                            <td class="font-weight-bold">${r.grades[sub] || '-'}</td>
+                        `).join('')}
+                        <td style="color:var(--gold); font-weight:bold">${st.subject_ranks[sub] || '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <div class="row mt-4">
+            <div class="col-7">
+                <div class="p-3 border rounded shadow-sm">
+                    <div class="filter-label mb-2" style="border-bottom: 1px solid var(--gold)">Summary</div>
+                    <div class="d-flex justify-content-between mb-1"><span>Total Aggregate:</span><strong>${st.aggregate}</strong></div>
+                    <div class="d-flex justify-content-between mb-1"><span>Average:</span><strong>${st.average_score}%</strong></div>
+                    <div class="d-flex justify-content-between"><span>Position:</span><strong>${st.class_position} / ${st.total_class_size}</strong></div>
+                </div>
+            </div>
+            <div class="col-5 text-center d-flex flex-column align-items-center justify-content-center">
+                <div class="filter-label">Division</div>
+                <div class="badge-div">DIV ${st.division}</div>
+            </div>
+        </div>
+
+        <div class="mt-4 p-3 border-left" style="border-left: 5px solid var(--gold); background: var(--light-bg); border-radius: 0 5px 5px 0;">
+            <strong>CLASS TEACHER'S REMARKS:</strong> <br>
+            <i class="text-muted">${getComment(st.average_score)}</i>
+        </div>
+
+        <div class="footer-sig d-flex justify-content-between" style="margin-top: 60px">
+            <div class="text-center" style="border-top: 1px solid #000; width: 180px; padding-top: 5px"><strong>Class Teacher</strong></div>
+            <div class="text-center" style="border-top: 1px solid #000; width: 180px; padding-top: 5px"><strong>Headteacher</strong></div>
+        </div>
+    </div>`;
+
+    container.innerHTML = html;
+}
+
+function getComment(avg) {
+    if (avg >= 85) return "An excellent performance. Your consistency is commendable.";
+    if (avg >= 70) return "A very good result. Keep pushing for even better grades.";
+    if (avg >= 50) return "Fair performance. You have potential to do much better.";
+    return "Much more effort is needed. Consult your teachers for support.";
+}
+
+$(document).ready(function() {
+    $('.select2').select2({ width: '100%' });
+    $('#studentSelect').on('change', function() {
+        renderStudentReport(this.value);
+    });
+});
+</script>
+{% endblock %}

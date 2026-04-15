@@ -1,0 +1,177 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- AdminLTE Theme -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+  <!-- Custom CSS for Flash Messages -->
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'warning' else 'times-circle' if category == 'danger' else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Add Class</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/classes">Classes</a></li>
+            <li class="breadcrumb-item active">Add Class</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Add New Class</h3>
+            </div>
+
+            <div class="card-body">
+              <div class="widget-content nopadding">
+                <form action="{{ url_for('classes_blueprint.add_classes') }}" method="POST" class="form-horizontal">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                  <!-- Class Name -->
+                  <div class="row mb-3">
+                    <label for="class_name" class="col-sm-2 col-form-label">Class Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="class_name" class="form-control" placeholder="Enter Class Name" required />
+                    </div>
+                  </div>
+
+                  <!-- Year -->
+                  <div class="row mb-3">
+                    <label for="year" class="col-sm-2 col-form-label">Year:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="year" class="form-control" placeholder="Enter Year" required />
+                    </div>
+                  </div>
+
+                  <!-- Teacher in Charge -->
+                  <div class="row mb-3">
+                    <label for="teacher_in_charge" class="col-sm-2 col-form-label">Teacher in Charge:</label>
+                    <div class="col-sm-10">
+                      <select name="teacher_in_charge" class="form-control" required>
+                        <option value="" disabled selected>Select Teacher</option>
+                        {% for teacher in teachers %}
+                          <option value="{{ teacher.teacher_id }}">
+                            {{ teacher.first_name }} {{ teacher.last_name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+
+                  <!-- Submit Button -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-sm btn-success">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              Footer
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <!-- Demo Script -->
+  <script src="/static/assets/js/demo.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

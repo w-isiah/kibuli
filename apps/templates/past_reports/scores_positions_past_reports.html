@@ -1,0 +1,272 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Scores & Positions Report{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="flashMessageContainer" class="mx-3 mt-3">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            <i class="fas fa-{{ 
+                'check-circle' if category == 'success' else
+                'exclamation-circle' if category == 'warning' else
+                'times-circle' if category == 'danger' else
+                'info-circle' }}"></i>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Scores & Positions Report</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Scores & Positions</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+
+      <!-- Filter Card -->
+      <div class="card card-primary card-outline">
+        <div class="card-header">
+          <h3 class="card-title">Filter Report</h3>
+        </div>
+        <form method="GET" action="{{ url_for('past_reports_blueprint.scores_positions_past_reports') }}">
+          <div class="card-body">
+            <div class="form-row">
+
+              <div class="form-group col-md-3">
+                <label for="class_id">Class</label>
+                <select id="class_id" name="class_id" class="form-control select2">
+                  <option value="">-- Select Class --</option>
+                  {% for c in class_list %}
+                    <option value="{{ c.class_id }}" {% if c.class_id == selected_class_id %}selected{% endif %}>{{ c.class_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-3">
+                <label for="year_id">Study Year</label>
+                <select id="year_id" name="year_id" class="form-control select2">
+                  <option value="">-- Select Year --</option>
+                  {% for y in study_years %}
+                    <option value="{{ y.year_id }}" {% if y.year_id == selected_study_year_id %}selected{% endif %}>{{ y.year_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-3">
+                <label for="term_id">Term</label>
+                <select id="term_id" name="term_id" class="form-control select2">
+                  <option value="">-- Select Term --</option>
+                  {% for t in terms %}
+                    <option value="{{ t.term_id }}" {% if t.term_id == selected_term_id %}selected{% endif %}>{{ t.term_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-3">
+                <label for="assessment_name">Assessment</label>
+                <select id="assessment_name" name="assessment_name" class="form-control select2">
+                  <option value="">-- Select Assessment --</option>
+                  {% for a in assessments %}
+                    <option value="{{ a.assessment_name }}" {% if a.assessment_name == selected_assessment_name %}selected{% endif %}>{{ a.assessment_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-3">
+                <label for="stream_id">Stream (optional)</label>
+                <select id="stream_id" name="stream_id" class="form-control select2">
+                  <option value="">-- All Streams --</option>
+                  {% for stream in streams %}
+                    <option value="{{ stream.stream_id }}" {% if stream.stream_id == selected_stream_id %}selected{% endif %}>{{ stream.stream_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+            </div>
+          </div>
+          <div class="card-footer text-right">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-search"></i> Filter Results
+            </button>
+            <button id="exportExcelButton" class="btn btn-success">
+              <i class="fas fa-file-excel"></i> Export to Excel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Pupil Performance</h3>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table id="reportTable" class="display nowrap stripe" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                  <th>Reg No</th>
+                  <th>Stream</th>
+                  <th>Year</th>
+                  <th>Term</th>
+                  <th>Assessment</th>
+
+                  {% for subject in subject_names %}
+                    <th>{{ subject }} (Mark)</th>
+                    <th>{{ subject }} (Grade)</th>
+                  {% endfor %}
+
+                  <th>Total</th>
+                  <th>Average</th>
+                  <th>Aggregate</th>
+                  <th>Division</th>
+                  <th>Stream Pos</th>
+                  <th>Class Pos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for student in past_reports %}
+                  <tr>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.reg_no }}</td>
+                    <td>{{ student.stream_name }}</td>
+                    <td>{{ student.year_name }}</td>
+                    <td>{{ student.term_name }}</td>
+                    <td>{{ student.assessment_name }}</td>
+
+                    {% for subject in subject_names %}
+                      <td>{{ student.marks[subject] if student.marks[subject] is not none else 'N/A' }}</td>
+                      <td>{{ student.grades[subject] if student.grades[subject] else 'N/A' }}</td>
+                    {% endfor %}
+
+                    <td>{{ student.total_score }}</td>
+                    <td>{{ student.average_score }}</td>
+                    <td>{{ student.aggregate }}</td>
+                    <td>{{ student.division }}</td>
+                    <td>{{ student.stream_position }}</td>
+                    <td>{{ student.class_position }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+<script src="/static/assets/js/mine.js"></script>
+
+<script>
+  $(function () {
+    $('.select2').select2();
+
+    $('#reportTable').DataTable({
+      fixedColumns: { left: 1 },
+      paging: false,
+      scrollX: true,
+      scrollY: '300px',
+      scrollCollapse: true,
+      stateSave: true,
+      deferRender: true
+    });
+
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+
+    $('#exportExcelButton').on('click', function (e) {
+      e.preventDefault();
+      const table = document.getElementById('reportTable');
+      if (!table || table.rows.length <= 1) {
+        alert("No data to export.");
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(table);
+
+      const headerRows = [
+        ["SACRED HEART GIRLS’ PRIMARY SCHOOL KYAMUSANSALA"],
+        ["P.O.BOX 1759, MASAKA – UGANDA"],
+        ["TEL: 0772‑848153 / 0782‑957781"],
+        ["Website: www.shpsk.ac.ug"]
+      ];
+
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      const totalCols = range.e.c + 1;
+
+      for (let R = range.e.r; R >= 0; --R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const oldRef = XLSX.utils.encode_cell({ c: C, r: R });
+          const newRef = XLSX.utils.encode_cell({ c: C, r: R + headerRows.length });
+          if (ws[oldRef]) {
+            ws[newRef] = ws[oldRef];
+            delete ws[oldRef];
+          }
+        }
+      }
+
+      ws['!merges'] = ws['!merges'] || [];
+      for (let i = 0; i < headerRows.length; i++) {
+        const cellRef = XLSX.utils.encode_cell({ c: 0, r: i });
+        ws[cellRef] = { t: 's', v: headerRows[i][0] };
+        ws['!merges'].push({ s: { c: 0, r: i }, e: { c: totalCols - 1, r: i } });
+      }
+
+      ws['!ref'] = XLSX.utils.encode_range({
+        s: { c: 0, r: 0 },
+        e: { c: range.e.c, r: range.e.r + headerRows.length }
+      });
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Assessment');
+      XLSX.writeFile(wb, 'assessment_report.xlsx');
+    });
+  });
+</script>
+{% endblock %}

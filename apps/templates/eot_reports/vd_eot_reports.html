@@ -1,0 +1,445 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Assessment Report{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+{{ super() }}
+<!-- Google Fonts & FontAwesome -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<!-- Local CSS -->
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+<style>
+  .no-print { display: block; }
+  @media print {
+    .no-print { display: none !important; }
+    body { background: white; }
+    .content-wrapper, .card { box-shadow: none !important; }
+    .content-wrapper { padding: 0; }
+    footer, .main-footer { display: none !important; }
+  }
+
+  .dark-maroon {
+    background-color: #800000 !important;
+    color: #fff !important;
+  }
+
+  .print-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .print-header img {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+  .print-header-text h1 {
+    font-size: 20px;
+    margin: 0;
+    color: #800000;
+  }
+  .print-header-text .contact {
+    font-size: 13px;
+    color: #444;
+  }
+  .form-info-wrapper {
+    width: 90%;
+    margin: 20px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .form-info {
+    flex: 1;
+    font-weight: bold;
+    color: #800000;
+  }
+  .form-info span {
+    color: black;
+  }
+  .student-photo img.student-square-photo {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    border: 2px solid #800000;
+    border-radius: 5px;
+    background: white;
+  }
+  table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    font-size: 20px;
+    line-height: 1.5;
+  }
+  th, td {
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+  }
+  th {
+    background-color: #800000;
+    color: white;
+  }
+  table th:first-child,
+  table td:first-child {
+    background-color: #800000;
+    color: white;
+    font-weight: bold;
+  }
+  .print-datetime {
+    text-align: right;
+    margin: 10px 40px 0 0;
+    font-size: 14px;
+    font-style: italic;
+  }
+  .signature-section td {
+    vertical-align: top;
+    padding: 20px;
+    font-size: 16px;
+  }
+  .gradescale table td {
+    padding: 5px 10px;
+    font-size: 14px;
+  }
+  .note {
+    font-size: 16px;
+    margin-top: 15px;
+    margin-left: 5%;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Header -->
+  <section class="content-header dark-maroon no-print">
+    <div class="container-fluid">
+      <h1>Printable Scores Report</h1>
+    </div>
+  </section>
+
+  <section class="content container-fluid">
+
+    <!-- Filter Form -->
+    <div class="card no-print">
+      <div class="card-header dark-maroon">
+        <h3 class="card-title">Filter Report</h3>
+      </div>
+      <form method="GET" action="{{ url_for('eot_reports_blueprint.vd_eot_reports') }}">
+        <div class="card-body">
+          <div class="row">
+            {% set select_style = "form-control select2" %}
+            <!-- Class -->
+            <div class="col-md-3">
+              <label>Class</label>
+              <select name="class_id" class="{{ select_style }}" required>
+                <option value="">-- Select Class --</option>
+                {% for c in class_list %}
+                <option value="{{ c.class_id }}" {% if c.class_id == selected_class_id %}selected{% endif %}>{{ c.class_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Stream -->
+            <div class="col-md-3">
+              <label>Stream</label>
+              <select name="stream_id" class="{{ select_style }}">
+                <option value="">-- Select Stream --</option>
+                {% for s in streams %}
+                <option value="{{ s.stream_id }}" {% if s.stream_id == selected_stream_id %}selected{% endif %}>{{ s.stream_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Study Year -->
+            <div class="col-md-3">
+              <label>Study Year</label>
+              <select name="year_id" class="{{ select_style }}" required>
+                <option value="">-- Select Year --</option>
+                {% for y in study_years %}
+                <option value="{{ y.year_id }}" {% if y.year_id == selected_study_year_id %}selected{% endif %}>{{ y.year_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Term -->
+            <div class="col-md-3">
+              <label>Term</label>
+              <select name="term_id" class="{{ select_style }}" required>
+                <option value="">-- Select Term --</option>
+                {% for t in terms %}
+                <option value="{{ t.term_id }}" {% if t.term_id == selected_term_id %}selected{% endif %}>{{ t.term_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Assessments (multiple) -->
+            <div class="col-md-12 mt-2">
+              <label>Assessments (Multiple)</label>
+              <select name="assessment_name" class="{{ select_style }}" multiple required>
+                {% for a in assessments %}
+                <option value="{{ a.assessment_name }}" {% if selected_assessment_name and a.assessment_name in selected_assessment_name %}selected{% endif %}>{{ a.assessment_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-right">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Filter
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Student Selector -->
+    <div class="card no-print">
+      <div class="card-header dark-maroon">
+        <h3 class="card-title">Select Pupil</h3>
+      </div>
+      <div class="card-body">
+        <select id="studentSelect" class="form-control select2">
+          <option value="">-- Select Pupil --</option>
+          {% set seen = [] %}
+          {% for st in reports %}
+          {% if st.reg_no not in seen %}
+          <option value="{{ st.reg_no }}">{{ st.full_name }}</option>
+          {% set _ = seen.append(st.reg_no) %}
+          {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Report Display -->
+    <div class="card">
+      <div class="card-header dark-maroon">
+        <h3 class="card-title">Report</h3>
+        <button class="btn btn-secondary float-right no-print" onclick="window.print()">
+          <i class="fas fa-print"></i> Print
+        </button>
+      </div>
+      <div class="card-body" id="printableReportContainer" style="overflow-x:auto;">
+        <p>Select a pupil to view the report.</p>
+      </div>
+    </div>
+
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+
+<script>
+  // Convert server-side data to JS objects
+  const allReports = {{ reports | tojson }};
+  const subjectNames = {{ subject_names | tojson }};
+  const badgeImage = "{{ url_for('static', filename='uploads/' ~ (badge_image or 'default-badge.png')) }}";
+
+  // Calculate average marks for each subject across assessments
+  function calculateSubjectAverages(reports, subjects) {
+    const averages = {};
+    subjects.forEach(subject => {
+      let total = 0, count = 0;
+      reports.forEach(r => {
+        const mark = parseFloat(r.marks?.[subject]);
+        if (!isNaN(mark)) {
+          total += mark;
+          count++;
+        }
+      });
+      averages[subject] = count ? (total / count).toFixed(2) + '%' : '';
+    });
+    return averages;
+  }
+
+  // Get rank for subject in the first report (assuming consistent ranking)
+  function getSubjectClassRank(reports, subject) {
+    const rank = reports[0].subject_ranks?.[subject];
+    return rank !== undefined ? rank : '';
+  }
+
+  // Main rendering function for student report
+  function renderStudentReport(regNo) {
+    const container = document.getElementById('printableReportContainer');
+    container.innerHTML = '';
+
+    if (!regNo) {
+      container.innerHTML = '<p>Please select a pupil to view the report.</p>';
+      return;
+    }
+
+    const reports = allReports.filter(r => r.reg_no === regNo);
+    if (!reports.length) {
+      container.innerHTML = '<p>No report data available for this pupil.</p>';
+      return;
+    }
+
+    const student = reports[0];
+    const printedAt = `<div class="print-datetime">Printed on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div>`;
+    const subjectAverages = calculateSubjectAverages(reports, subjectNames);
+
+    // Header section HTML
+    const header = `
+    <div class="print-header">
+    <img src="${badgeImage}" onerror="this.src='{{ url_for('static', filename='assets/img/badge_image.jpg') }}'" alt="School Badge" />
+    <div class="print-header-text">
+    <h1>SACRED HEART GIRLS’ PRIMARY SCHOOL KYAMUSANSALA</h1>
+    <div class="contact">P.O.BOX 1759, MASAKA – UGANDA</div>
+    <div class="contact">TEL: 0772‑848153 / 0782‑957781</div>
+    <div class="contact">Home Page: <a href="http://www.shpsk.ac.ug" target="_blank">www.shpsk.ac.ug</a></div>
+    </div>
+    </div>
+    <div class="form-info-wrapper compact-info">
+    <div class="form-info">
+    <div><strong>PUPIL’S NAME:</strong> <span>${student.full_name}</span></div>
+    <div><strong>REG NO:</strong> <span>${student.reg_no}</span> ${student.class_name === 'PRIMARY 7' && student.index_number ? `&nbsp;<strong>INDEX NO:</strong> <span>${student.index_number}</span>` : ''}</div>
+    <div><strong>CLASS:</strong> <span>${student.class_name}</span> &nbsp; <strong>STREAM:</strong> <span>${student.stream_name}</span></div>
+    <div><strong>CLASS TEACHER:</strong> <span>${student.class_teacher}</span></div>
+    <div><strong>CLASS SIZE:</strong> <span>${student.total_class_size}</span> &nbsp; <strong>STREAM SIZE:</strong> <span>${student.total_stream_size}</span></div>
+    </div>
+    <div class="student-photo">
+    ${student.image ? `<img src="/static/uploads/${student.image}" class="student-square-photo" alt="Student Photo">` : `<span class="text-muted">No Image</span>`}
+    </div>
+    </div>
+    `;
+
+    // Sort reports by assessment name
+    reports.sort((a, b) => a.assessment_name.localeCompare(b.assessment_name));
+
+    // Build the table header and rows dynamically
+    const table = `
+    <table>
+    <thead>
+    <tr>
+    <th>Subject</th>
+    ${reports.map(r => `<th colspan="2">${r.assessment_name}</th>`).join('')}
+    <th>Avg</th>
+    <th><small>Subject Rank <small></th>
+    <th>Comment</th>
+    </tr>
+    <tr>
+    <th></th>
+    ${reports.map(() => `<th>Mark</th><th>Grade</th>`).join('')}
+    <th></th><th></th><th></th>
+    </tr>
+    </thead>
+    <tbody>
+    ${subjectNames.map(subject => `
+      <tr>
+      <td>${subject}</td>
+      ${reports.map(r => `<td>${r.marks?.[subject] ?? ''}</td><td>${r.grades?.[subject] ?? ''}</td>`).join('')}
+      <td>${subjectAverages[subject]}</td>
+      <td>${getSubjectClassRank(reports, subject)}</td>
+
+
+      <td>
+      ${(() => {
+        const c = reports[0].subject_comments?.[subject];
+        return c ? `<small> ${c.text} (${c.by})</small>` : '';
+      })()}
+      </td>
+
+
+
+
+      </tr>
+      `).join('')}
+    <tr><td colspan="${(reports.length * 2) + 4}"><strong>Summary</strong></td></tr>
+    <tr><td>Aggregate</td>${reports.map(r => `<td colspan="2">${r.aggregate ?? ''}</td>`).join('')}<td></td><td></td><td></td></tr>
+    <tr><td>Total</td>${reports.map(r => `<td colspan="2">${r.total_score ?? ''}</td>`).join('')}<td></td><td></td><td></td></tr>
+    <tr><td>Average</td>${reports.map(r => `<td colspan="2">${r.average_score ?? ''}</td>`).join('')}<td></td><td></td><td></td></tr>
+    <tr><td>Division</td>${reports.map(r => `<td colspan="2">${r.division ?? ''}</td>`).join('')}<td></td><td></td><td></td></tr>
+    <tr><td>Stream Position</td>${reports.map(r => `<td colspan="2">${r.stream_position ?? ''}</td>`).join('')}<td></td><td></td><td></td></tr>
+    <tr><td>Class Position</td>${reports.map(r => `<td colspan="2">${r.class_position ?? ''}</td>`).join('')}<td></td><td></td><td></td></tr>
+    </tbody>
+    </table>
+
+    
+
+<table class="signature-section" width="90%">
+  <tr>
+    <!-- Class Teacher Section -->
+    <td width="50%">
+      <strong>CLASS TEACHER:</strong> <span>${student.class_teacher}</span><br><br>
+      <em>${student.classteacher_comment || ''}</em><br><br>
+      ${
+        student.class_teacher_sign_image
+          ? `<img src="/static/uploads/${student.class_teacher_sign_image}" 
+                   alt="Class Teacher Signature" 
+                   style="width:120px; height:auto;" 
+                   onerror="this.onerror=null; this.style.display='none';">`
+          : ''
+      }
+    </td>
+
+    <!-- Head Teacher Section -->
+    <td width="50%">
+      <strong>HEAD TEACHER'S COMMENT:</strong> ${student.headteacher_comment || ''}<br><br>
+      ${
+        student.headmaster_sign_image
+          ? `<img src="/static/uploads/${student.headmaster_sign_image}" 
+                   alt="Head Teacher Signature" 
+                   style="width:120px; height:auto;" 
+                   onerror="this.onerror=null; this.style.display='none';">`
+          : ''
+      }
+    </td>
+  </tr>
+</table>
+
+
+
+
+    <hr>
+
+    <p><strong>REQUIREMENTS (Authorised by Administration)</strong></p>
+    <p>I have read the report ............................................................. ( Parent / Guardian's Signature )</p>
+
+    <div class="gradescale">
+    <table>
+    <tr>
+    <td><strong>Grade Scale:</strong></td>
+    <td>D1: 95-100</td><td>D2: 90-94</td><td>C3: 85-89</td><td>C4: 80-84</td>
+    <td>C5: 70-79</td><td>C6: 60-69</td><td>P7: 55-59</td><td>P8: 40-49</td><td>F9: 0-39</td>
+    </tr>
+    </table>
+    </div>
+
+    <p class="note">NEXT TERM BEGINS ON : 08-Sep-2024</p>
+    `;
+
+    container.innerHTML = printedAt + header + table;
+  }
+
+  $(document).ready(() => {
+    // Initialize Select2 plugin
+    $('.select2').select2({
+      width: '100%'
+    });
+
+    // On pupil select change, render report
+    $('#studentSelect').on('change', function() {
+      renderStudentReport(this.value);
+    });
+
+    // Optionally pre-select first pupil and show report
+    const initialRegNo = $('#studentSelect').val();
+    if (initialRegNo) {
+      renderStudentReport(initialRegNo);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,305 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- AdminLTE Theme -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+  <!-- Select2 -->
+  <link rel="stylesheet" href="/static/assets/css/select2.min.css" />
+
+  <!-- Custom CSS for Flash Messages -->
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+              'check-circle' if category == 'success' 
+              else 'exclamation-circle' if category == 'warning' 
+              else 'times-circle' if category == 'danger' 
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Add Pupil</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/pupils">Pupils</a></li>
+            <li class="breadcrumb-item active">add_pupil</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Add New Pupil</h3>
+            </div>
+
+            <div class="card-body">
+              <div class="widget-content nopadding">
+                <form action="{{ url_for('pupils_blueprint.add_pupil') }}" method="POST" class="form-horizontal" enctype="multipart/form-data">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                  <!-- Registration Number -->
+                  <div class="row mb-3">
+                    <label for="reg_no" class="col-sm-2 col-form-label">Registration No:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="reg_no" class="form-control" placeholder="Enter Registration Number" required />
+                    </div>
+                  </div>
+
+                  <!-- First Name -->
+                  <div class="row mb-3">
+                    <label for="first_name" class="col-sm-2 col-form-label">First Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="first_name" class="form-control" placeholder="Enter First Name" required />
+                    </div>
+                  </div>
+
+                  <!-- Other Name -->
+                  <div class="row mb-3">
+                    <label for="other_name" class="col-sm-2 col-form-label">Other Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="other_name" class="form-control" placeholder="Enter Other Name" />
+                    </div>
+                  </div>
+
+                  <!-- Last Name -->
+                  <div class="row mb-3">
+                    <label for="last_name" class="col-sm-2 col-form-label">Last Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="last_name" class="form-control" placeholder="Enter Last Name" required />
+                    </div>
+                  </div>
+
+                  <!-- Date of Birth -->
+                  <div class="row mb-3">
+                    <label for="date_of_birth" class="col-sm-2 col-form-label">Date of Birth:</label>
+                    <div class="col-sm-10">
+                      <input type="date" name="date_of_birth" class="form-control" required />
+                    </div>
+                  </div>
+
+                  <!-- Gender -->
+                  <div class="row mb-3">
+                    <label for="gender" class="col-sm-2 col-form-label">Gender:</label>
+                    <div class="col-sm-10">
+                      <select name="gender" class="form-control" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Class -->
+                  <div class="row mb-3">
+                    <label for="class_id" class="col-sm-2 col-form-label">Class:</label>
+                    <div class="col-sm-10">
+                      <select name="class_name" class="form-control select2" required>
+                        {% for class in classes %}
+                          <option value="{{ class.class_id }}">{{ class.class_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Study Year -->
+                  <div class="row mb-3">
+                    <label for="year_id" class="col-sm-2 col-form-label">Study Year:</label>
+                    <div class="col-sm-10">
+                      <select name="study_year" class="form-control select2" required>
+                        {% for study_year in study_years %}
+                          <option value="{{ study_year.year_id }}">{{ study_year.year_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Admission Date -->
+                  <div class="row mb-3">
+                    <label for="admission_date" class="col-sm-2 col-form-label">Admission Date:</label>
+                    <div class="col-sm-10">
+                      <input type="date" name="admission_date" class="form-control" required />
+                    </div>
+                  </div>
+
+                  <!-- Address -->
+                  <div class="row mb-3">
+                    <label for="address" class="col-sm-2 col-form-label">Address:</label>
+                    <div class="col-sm-10">
+                      <textarea name="address" class="form-control" placeholder="Enter Address" required></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Emergency Contact -->
+                  <div class="row mb-3">
+                    <label for="emergency_contact" class="col-sm-2 col-form-label">Emergency Contact:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="emergency_contact" class="form-control" placeholder="Enter Emergency Contact" required />
+                    </div>
+                  </div>
+
+                  <!-- Medical Info -->
+                  <div class="row mb-3">
+                    <label for="medical_info" class="col-sm-2 col-form-label">Medical Info:</label>
+                    <div class="col-sm-10">
+                      <textarea name="medical_info" class="form-control" placeholder="Enter Medical Information"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Special Needs -->
+                  <div class="row mb-3">
+                    <label for="special_needs" class="col-sm-2 col-form-label">Special Needs:</label>
+                    <div class="col-sm-10">
+                      <textarea name="special_needs" class="form-control" placeholder="Enter Special Needs"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Attendance Record -->
+                  <div class="row mb-3">
+                    <label for="attendance_record" class="col-sm-2 col-form-label">Attendance Record:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="attendance_record" class="form-control" placeholder="Enter Attendance Record" />
+                    </div>
+                  </div>
+
+                  <!-- Academic Performance -->
+                  <div class="row mb-3">
+                    <label for="academic_performance" class="col-sm-2 col-form-label">Academic Performance:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="academic_performance" class="form-control" placeholder="Enter Academic Performance" />
+                    </div>
+                  </div>
+
+                  <!-- Notes -->
+                  <div class="row mb-3">
+                    <label for="notes" class="col-sm-2 col-form-label">Notes:</label>
+                    <div class="col-sm-10">
+                      <textarea name="notes" class="form-control" placeholder="Enter Notes"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Profile Image -->
+                  <div class="row mb-3">
+                    <label for="image_url" class="col-sm-2 col-form-label">Profile Image:</label>
+                    <div class="col-sm-10">
+                      <input type="file" name="image" class="form-control" accept="image/*" />
+                    </div>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-sm btn-success">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              Footer
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <!-- Demo Script -->
+  <script src="/static/assets/js/demo.js"></script>
+  <!-- Select2 -->
+  <script src="/static/assets/js/select2.min.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      $('.select2').select2();
+
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock javascripts %}

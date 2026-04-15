@@ -1,0 +1,180 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini layout-fixed{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+
+  <!-- AdminLTE Theme -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/assets/css/mine.css">
+
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: 80%;
+      display: none;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1><i class="fas fa-warehouse text-primary"></i>Room Collection Dashboard</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item">
+              <a href="/index"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="breadcrumb-item active">Dashboard</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{
+              'check-circle' if category == 'success'
+              else 'exclamation-triangle' if category == 'warning'
+              else 'times-circle' if category == 'danger'
+              else 'info-circle'
+            }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+
+        <!-- Dormitories -->
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-navy">
+            <div class="inner">
+              <h5>Dormitories</h5>
+              <p>Accommodation Details</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-bed"></i>
+            </div>
+            <a href="/dorms" class="small-box-footer">More Info <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Classes -->
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-fuchsia">
+            <div class="inner">
+              <h5>Classes</h5>
+              <p>Class Details</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-chalkboard"></i>
+            </div>
+            <a href="/classes" class="small-box-footer">More Info <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Rooms -->
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-lightblue">
+            <div class="inner">
+              <h5>Rooms</h5>
+              <p>Room Management</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-door-closed"></i>
+            </div>
+            <a href="/rooms" class="small-box-footer">More Info <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Streams -->
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-cyan">
+            <div class="inner">
+              <h5>Streams</h5>
+              <p>Academic Stream Info</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-code-branch"></i>
+            </div>
+            <a href="/streams" class="small-box-footer">More Info <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Summary Section -->
+      <div class="card mt-4">
+        <div class="card-header border-transparent">
+          <h3 class="card-title"><i class="fas fa-clipboard-list"></i> Summary List</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" data-card-widget="remove">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-3">
+          <p class="text-muted">Placeholder content for upcoming reports or listings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.js"></script>
+
+  <!-- DataTables -->
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Divisions List{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Fonts & Icons -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+<!-- Theme & Plugins -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+<!-- Custom Styles -->
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+  .alert-dismissible {
+    padding-right: 30px;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alert-container" id="flashMessageContainer">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <i class="fas fa-{{ 
+        'check-circle' if category == 'success' 
+        else 'exclamation-circle' if category == 'warning' 
+        else 'times-circle' if category == 'danger' 
+        else 'info-circle' }}"></i>
+        <span>{{ message }}</span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Page Header -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2 align-items-center">
+          <div class="col-sm-6">
+            <h1 class="mb-0">Division List</h1>
+          </div>
+          <div class="col-sm-6 text-sm-right">
+            <!-- Reserved for future header actions -->
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="/index">Home</a></li>
+
+              <li class="breadcrumb-item active">divisions</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+
+              
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Division Table</h3>
+                <a href="/add_division" class="btn btn-sm btn-primary">
+                  <i class="fas fa-plus-circle"></i> Add a Division
+                </a>
+              </div>
+
+
+
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table id="divisionTable" class="display stripe nowrap" style="width:100%">
+                    <thead>
+                      <tr>
+                        <th>Division Name</th>
+                        <th>Min Score</th>
+                        <th>Max Score</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for div in divisions %}
+                      <tr>
+                        <td>{{ div.division_name }}</td>
+                        <td>{{ div.min_score }}</td>
+                        <td>{{ div.max_score }}</td>
+                        <td>
+                          <a href="/edit_division/{{ div.division_id }}" class="btn btn-sm btn-warning">Edit</a>
+                        </td>
+                        <td>
+                          {% if session['role'] == 'super_admin' %}
+                          <a href="/delete_division/{{ div.division_id }}" class="btn btn-sm btn-danger"
+                          onclick="return confirm('Delete division {{ div.division_name }}?')">
+                          Delete
+                        </a>
+                        {% else %}
+                        <span>—</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<!-- Core Libraries -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+
+<!-- DataTables Plugins -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+
+<!-- Page Scripts -->
+<script>
+  $(document).ready(function() {
+    $('#divisionTable').DataTable({
+      paging: true,
+      searching: true,
+      ordering: true,
+      responsive: true
+    });
+
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(500).delay(3000).fadeOut(1000);
+    }
+  });
+</script>
+{% endblock javascripts %}

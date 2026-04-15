@@ -1,0 +1,231 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Teacher{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'warning' else 'times-circle' if category == 'danger' else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Teacher</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Teachers</a></li>
+            <li class="breadcrumb-item active">Edit Teacher</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-body">
+          <form action="{{ url_for('teachers_blueprint.edit_teacher', teacher_id=teacher.teacher_id) }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label>Teacher Number</label>
+                <input type="text" name="teacher_number" class="form-control" value="{{ teacher.teacher_number }}" readonly>
+              </div>
+              <div class="form-group col-md-4">
+                <label>First Name</label>
+                <input type="text" name="first_name" class="form-control" value="{{ teacher.first_name }}" required>
+              </div>
+              <div class="form-group col-md-4">
+                <label>Other Name</label>
+                <input type="text" name="other_name" class="form-control" value="{{ teacher.other_name }}">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label>Last Name</label>
+                <input type="text" name="last_name" class="form-control" value="{{ teacher.last_name }}" required>
+              </div>
+              <div class="form-group col-md-4">
+                <label>Name SF</label>
+                <input type="text" name="name_sf" class="form-control" value="{{ teacher.name_sf }}">
+              </div>
+              <div class="form-group col-md-4">
+                <label>Date of Birth</label>
+                <input type="date" name="date_of_birth" class="form-control" value="{{ teacher.date_of_birth }}">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label>Gender</label>
+                <select name="gender" class="form-control">
+                  <option value="Male" {{ 'selected' if teacher.gender == 'Male' else '' }}>Male</option>
+                  <option value="Female" {{ 'selected' if teacher.gender == 'Female' else '' }}>Female</option>
+                  <option value="Other" {{ 'selected' if teacher.gender == 'Other' else '' }}>Other</option>
+                </select>
+              </div>
+
+              <div class="form-group col-md-6">
+                <label>Subject Specialty</label>
+                <select name="subject_specialty" class="form-control" required>
+                  <option value="" disabled {% if not teacher.subject_specialty %}selected{% endif %}>Select Subject</option>
+                  {% for subject in subjects %}
+                    <option value="{{ subject.subject_name }}" {{ 'selected' if subject.subject_name == teacher.subject_specialty else '' }}>
+                      {{ subject.subject_name }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label>Grade Level</label>
+                <input type="text" name="grade_level" class="form-control" value="{{ teacher.grade_level }}">
+              </div>
+              <div class="form-group col-md-6">
+                <label>Hire Date</label>
+                <input type="date" name="hire_date" class="form-control" value="{{ teacher.hire_date }}">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label>Contact Number</label>
+                <input type="text" name="contact_number" class="form-control" value="{{ teacher.contact_number }}">
+              </div>
+              <div class="form-group col-md-6">
+                <label>Email</label>
+                <input type="email" name="email" class="form-control" value="{{ teacher.email }}">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Address</label>
+              <textarea name="address" class="form-control" rows="2">{{ teacher.address }}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select name="status" class="form-control">
+                <option value="Active" {{ 'selected' if teacher.status == 'Active' else '' }}>Active</option>
+                <option value="Inactive" {{ 'selected' if teacher.status == 'Inactive' else '' }}>Inactive</option>
+              </select>
+            </div>
+
+            <!-- Current Image -->
+            <div class="form-group">
+              <label>Current Image</label><br>
+              {% if teacher.image %}
+                <img src="{{ url_for('static', filename='uploads/' ~ teacher.image) }}" style="max-width: 150px; border-radius: 5px;">
+              {% else %}
+                <p>No image uploaded.</p>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label>Upload New Image</label>
+              <input type="file" name="image" class="form-control-file" accept="image/*">
+            </div>
+
+            <!-- Sign Image -->
+            <div class="form-group">
+              <label>Current Signature</label><br>
+              {% if teacher.sign_image %}
+                <img src="{{ url_for('static', filename='uploads/' ~ teacher.sign_image) }}" style="max-width: 150px; border-radius: 5px;">
+              {% else %}
+                <p>No signature uploaded.</p>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label>Upload New Signature</label>
+              <input type="file" name="sign_image" class="form-control-file" accept="image/*">
+            </div>
+
+            <div class="form-group text-right">
+              <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/js/demo.js"></script>
+<script src="/static/assets/js/mine.js"></script>
+<script>
+  $(document).ready(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+{% endblock javascripts %}

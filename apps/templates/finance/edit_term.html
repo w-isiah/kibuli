@@ -1,0 +1,312 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Term{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Fonts & Icons -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Toastr -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<!-- AdminLTE -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- Custom CSS -->
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+<style>
+  .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+  }
+  .form-actions {
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .btn-success {
+    padding: 8px 25px;
+    font-weight: 500;
+  }
+  .col-form-label {
+    font-weight: 500;
+    color: #495057;
+  }
+  .invalid-feedback {
+    display: none;
+    font-size: 0.875rem;
+    margin-top: 4px;
+  }
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages Data -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div id="flash-data" style="display:none">
+    {% for category, message in messages %}
+    <span data-category="{{ category }}" data-message="{{ message|e }}"></span>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>
+            <i class="fas fa-edit mr-2"></i>Edit Term
+          </h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index"><i class="fas fa-home"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="/term"><i class="fas fa-calendar-alt"></i> Terms</a></li>
+            <li class="breadcrumb-item active">Edit Term</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title mb-0">
+                <i class="fas fa-pencil-alt mr-2"></i>Edit Term Details
+              </h3>
+            </div>
+
+            <div class="card-body">
+              <form action="{{ url_for('term_blueprint.edit_term', term_id=term.term_id) }}" method="POST" class="form-horizontal" id="editTermForm">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Term Name -->
+                <div class="row mb-3">
+                  <label for="term_name" class="col-sm-2 col-form-label">
+                    <i class="fas fa-tag mr-1"></i> Term Name:
+                  </label>
+                  <div class="col-sm-10">
+                    <input type="text" name="term_name" class="form-control" 
+                           value="{{ term.term_name }}" 
+                           maxlength="20" 
+                           required
+                           title="Enter term name (e.g., Term 1, First Term)">
+                    <div class="invalid-feedback">Term name is required!</div>
+                  </div>
+                </div>
+
+                <!-- Start Date -->
+                <div class="row mb-3">
+                  <label for="start_on" class="col-sm-2 col-form-label">
+                    <i class="fas fa-calendar-day mr-1"></i> Start Date:
+                  </label>
+                  <div class="col-sm-10">
+                    <input type="date" name="start_on" class="form-control" 
+                           value="{{ term.start_on }}" 
+                           required
+                           title="Select term start date">
+                    <div class="invalid-feedback">Start date is required!</div>
+                  </div>
+                </div>
+
+                <!-- End Date -->
+                <div class="row mb-3">
+                  <label for="ends_on" class="col-sm-2 col-form-label">
+                    <i class="fas fa-calendar-times mr-1"></i> End Date:
+                  </label>
+                  <div class="col-sm-10">
+                    <input type="date" name="ends_on" class="form-control" 
+                           value="{{ term.ends_on }}" 
+                           required
+                           title="Select term end date">
+                    <div class="invalid-feedback">End date is required!</div>
+                  </div>
+                </div>
+
+                <!-- Academic Year -->
+                <div class="row mb-3">
+                  <label for="year_id" class="col-sm-2 col-form-label">
+                    <i class="fas fa-calendar-year mr-1"></i> Academic Year:
+                  </label>
+                  <div class="col-sm-10">
+                    <select name="year_id" class="form-control" required>
+                      <option value="">-- Select Academic Year --</option>
+                      {% for year in years %}
+                        <option value="{{ year.year_id }}" 
+                                {% if year.year_id == term.year_id %}selected{% endif %}>
+                          {{ year.year_name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Academic year is required!</div>
+                  </div>
+                </div>
+
+                <!-- Status -->
+                <div class="row mb-3">
+                  <label for="status" class="col-sm-2 col-form-label">
+                    <i class="fas fa-toggle-on mr-1"></i> Status:
+                  </label>
+                  <div class="col-sm-10">
+                    <select name="status" class="form-control" required>
+                      <option value="1" {% if term.status == 1 %}selected{% endif %}>Active</option>
+                      <option value="0" {% if term.status == 0 %}selected{% endif %}>Inactive</option>
+                    </select>
+                    <div class="invalid-feedback">Status is required!</div>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-save mr-2"></i>Update Term
+                  </button>
+                  <a href="/term" class="btn btn-secondary btn-lg ml-2">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                  </a>
+                </div>
+              </form>
+            </div>
+
+            <div class="card-footer text-center">
+              <small class="text-muted">
+                <i class="fas fa-info-circle mr-1"></i> 
+                Editing: {{ term.term_name }} | ID: {{ term.term_id }}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/assets/js/adminlte.js"></script>
+<!-- Toastr -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize Toastr notifications
+    toastr.options = {
+      "closeButton": true,
+      "progressBar": true,
+      "positionClass": "toast-top-right",
+      "timeOut": "5000",
+      "extendedTimeOut": "1000"
+    };
+
+    // Show flash messages as toast notifications
+    $('#flash-data span').each(function () {
+      const category = $(this).data('category');
+      const message = $(this).data('message');
+      
+      switch(category) {
+        case 'success':
+          toastr.success(message);
+          break;
+        case 'error':
+        case 'danger':
+          toastr.error(message);
+          break;
+        case 'warning':
+          toastr.warning(message);
+          break;
+        default:
+          toastr.info(message);
+      }
+    });
+
+    // Form validation
+    $('#editTermForm').on('submit', function(e) {
+      // Reset validation states
+      $('.form-control').removeClass('is-invalid');
+      $('.invalid-feedback').hide();
+      
+      let isValid = true;
+      const startDate = new Date($('input[name="start_on"]').val());
+      const endDate = new Date($('input[name="ends_on"]').val());
+      const termName = $('input[name="term_name"]').val().trim();
+
+      // Check required fields
+      $('input[required], select[required]').each(function() {
+        if (!$(this).val().trim()) {
+          $(this).addClass('is-invalid');
+          $(this).next('.invalid-feedback').show();
+          isValid = false;
+        }
+      });
+
+      // Validate term name
+      if (!termName) {
+        $('input[name="term_name"]').addClass('is-invalid');
+        $('input[name="term_name"]').next('.invalid-feedback').show();
+        isValid = false;
+      }
+
+      // Validate dates
+      if (endDate < startDate) {
+        $('input[name="ends_on"]').addClass('is-invalid');
+        toastr.error('End date cannot be earlier than start date.');
+        isValid = false;
+      }
+
+      // Check if dates are in the past
+      const today = new Date();
+      if (startDate < today) {
+        toastr.warning('Start date is in the past.');
+      }
+
+      if (!isValid) {
+        e.preventDefault();
+        toastr.error('Please fix the errors in the form.');
+      } else {
+        toastr.info('Updating term... Please wait.');
+      }
+
+      return isValid;
+    });
+
+    // Real-time validation for date inputs
+    $('input[name="start_on"], input[name="ends_on"]').on('change', function() {
+      const startDate = new Date($('input[name="start_on"]').val());
+      const endDate = new Date($('input[name="ends_on"]').val());
+      
+      if (endDate < startDate) {
+        $(this).addClass('is-invalid');
+        toastr.warning('End date should be after start date.');
+      } else {
+        $(this).removeClass('is-invalid');
+      }
+    });
+
+    // Auto-hide toast notifications after 5 seconds
+    setTimeout(function() {
+      $('.toast').fadeOut('slow');
+    }, 5000);
+  });
+</script>
+{% endblock javascripts %}

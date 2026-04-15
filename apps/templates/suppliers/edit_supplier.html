@@ -1,0 +1,133 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Edit Supplier/Donor {% endblock %}
+
+{% block body_class %} sidebar-mini {% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Supplier: {{ supplier.Name if supplier else 'Loading...' }}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/suppliers">Suppliers</a></li>
+            <li class="breadcrumb-item active">Edit Supplier</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h3 class="card-title">Edit Supplier/Donor Details</h3>
+      <div class="btn-group mb-2" role="group">
+        <a href="/suppliers">
+          <button type="button" class="btn btn-sm btn-outline-primary">View Suppliers</button>
+        </a>
+        <a href="/add_supplier">
+          <button type="button" class="btn btn-sm btn-outline-primary">Add a Supplier</button>
+        </a>
+        <a href="/inventory_index">
+          <button type="button" class="btn btn-sm btn-outline-primary">Inventory Dashboard</button>
+        </a>
+      </div>
+    </div>
+    
+    <div class="card-body">
+      <div class="widget-content nopadding">
+
+        <form action="{{ url_for('suppliers_blueprint.edit_supplier', supplier_id=supplier.SupplierID) }}" method="POST">
+          
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+          <input type="hidden" name="id" value="{{ supplier.SupplierID }}">
+
+          <div class="row mb-3">
+            <label for="name" class="col-sm-3 col-form-label">Name:</label>
+            <div class="col-sm-9">
+              <input type="text" name="name" class="form-control" value="{{ supplier.Name }}" id="name" placeholder="Enter Supplier Name" required>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="contact_details" class="col-sm-3 col-form-label">Contact Details:</label>
+            <div class="col-sm-9">
+              <input type="text" name="contact_details" class="form-control" value="{{ supplier.ContactDetails or '' }}" id="contact_details" placeholder="Email, Phone, or Address">
+            </div>
+          </div>
+
+          {% set types = ['Supplier', 'Financier', 'Donor', 'Other'] %}
+          <div class="row mb-3">
+            <label for="type" class="col-sm-3 col-form-label">Type:</label>
+            <div class="col-sm-9">
+              <select name="type" class="form-control" id="type">
+                {% for t in types %}
+                  <option value="{{ t }}" {% if supplier.Type == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group text-right">
+            <button type="submit" class="btn btn-sm btn-success">Save Changes</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+<script>
+  $(document).ready(function() {
+    // Flash message fade-in and fade-out effect
+    if ($('.alert-container').length) {
+      $('.alert-container').fadeIn(500).delay(3000).fadeOut(1000);
+    }
+  });
+</script>
+{% endblock javascripts %}

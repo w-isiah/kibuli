@@ -1,0 +1,140 @@
+{% extends "layouts/base.html" %}
+{% block title %}Term Report Card{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Times+New+Roman">
+<style>
+  .report-header {
+    text-align: center;
+    font-family: "Times New Roman", serif;
+    margin-bottom: 20px;
+  }
+  .report-header h4, .report-header h5, .report-header p {
+    margin: 0;
+    line-height: 1.4;
+  }
+  .pupil-info-table, .results-table {
+    width: 100%;
+    font-family: "Times New Roman", serif;
+    font-size: 14px;
+  }
+  .pupil-info-table td {
+    padding: 4px 8px;
+  }
+  .results-table th, .results-table td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+  }
+  .results-table th {
+    background-color: #f0f0f0;
+  }
+  .signature-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    font-family: "Times New Roman", serif;
+  }
+  .signature-section p {
+    border-top: 1px solid #000;
+    width: 40%;
+    padding-top: 6px;
+    text-align: center;
+  }
+  .footer-note {
+    text-align: center;
+    margin-top: 30px;
+    font-style: italic;
+    font-family: "Times New Roman", serif;
+    font-size: 13px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content">
+    <div class="container-fluid">
+      <div class="report-header">
+        <h4><strong>SACRED HEART PRIMARY SCHOOL - KYAMUSANSALA</strong></h4>
+        <p>P.O. Box 1759, Masaka | Tel: 0772-848153 / 0702-253560 | Email: shps-rscjp@gmail.com</p>
+        <h5><u>TERM {{ pupil.term_name }} - {{ pupil.year_name }} ACADEMIC REPORT CARD</u></h5>
+      </div>
+
+      <!-- Pupil Information -->
+      <table class="pupil-info-table mb-4">
+        <tr>
+          <td><strong>Name:</strong> {{ pupil.full_name }}</td>
+          <td><strong>Reg No:</strong> {{ pupil.reg_no }}</td>
+          <td rowspan="4" style="text-align:center;">
+            {% if pupil.image %}
+              <img src="/static/uploads/{{ pupil.image }}" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #000;">
+            {% else %}
+              <span>No Image</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Class:</strong> {{ pupil.class_name }}</td>
+          <td><strong>Stream:</strong> {{ pupil.stream_name }}</td>
+        </tr>
+        <tr>
+          <td><strong>Dormitory:</strong> {{ pupil.dorm_id or 'N/A' }}</td>
+          <td><strong>Gender:</strong> {{ pupil.gender }}</td>
+        </tr>
+        <tr>
+          <td><strong>Stream Position:</strong> {{ stream_position or '-' }}</td>
+          <td><strong>Class Position:</strong> {{ class_position or '-' }}</td>
+        </tr>
+      </table>
+
+      <!-- Results Table -->
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Mark</th>
+            <th>Grade</th>
+            <th>Remark</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subject in subjects %}
+            <tr>
+              <td style="text-align:left;">{{ subject.subject }}</td>
+              <td>{{ subject.mark }}</td>
+              <td>{{ subject.grade }}</td>
+              <td>{{ subject.remark }}</td>
+            </tr>
+          {% endfor %}
+          <tr>
+            <th>Total</th>
+            <td colspan="3">{{ total_score }}</td>
+          </tr>
+          <tr>
+            <th>Average</th>
+            <td colspan="3">{{ average_score }}</td>
+          </tr>
+          <tr>
+            <th>Aggregate</th>
+            <td colspan="3">{{ aggregate }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Signatures -->
+      <div class="signature-section">
+        <p>Teacher's Signature</p>
+        <p>Head Teacher's Signature</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer-note">
+        Printed on: {{ print_date.strftime('%Y-%m-%d') }}<br>
+        “Striving for Excellence!”
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

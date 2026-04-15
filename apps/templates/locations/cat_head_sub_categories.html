@@ -1,0 +1,142 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Sections{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- AdminLTE & Custom Styles -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="/static/assets/css/mine.css">
+  <!-- DataTables with FixedColumns -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mt-3" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1>Sections</h1>
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="/index">Home</a></li>
+          <li class="breadcrumb-item active">Sections</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mb-0">Section List</h3>
+          <div>
+            <a href="/add_cat_head_sub_category" class="btn btn-sm btn-primary">
+              <i class="fas fa-plus-circle"></i> Add a Section
+            </a>
+            <a href="/cat_head_sub_categories" class="btn btn-sm btn-info">
+              <i class="fas fa-list"></i> Manage Sections
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body table-responsive">
+          <table id="subCategoriesTable" class="display nowrap stripe" style="width:100%">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Department</th>
+                <th>Description</th>
+                <th>Edit</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sub in sub_categories %}
+              <tr>
+                <td>{{ sub.sub_category_name }}</td>
+                <td>{{ sub.category_name }}</td>
+                <td>{{ sub.sub_category_description or '—' }}</td>
+                <td>
+                  <a href="/edit_sub_category/{{ sub.sub_category_id }}" class="btn btn-sm btn-warning" aria-label="Edit {{ sub.sub_category_name }}">
+                    <i class="fas fa-edit"></i> Edit
+                  </a>
+                </td>
+                <td>
+                  {% if session.get('role') == 'admin' %}
+                  <a href="/delete_sub_category/{{ sub.sub_category_id }}"
+                     class="btn btn-sm btn-danger"
+                     onclick="return confirm('Delete {{ sub.sub_category_name }}?')"
+                     aria-label="Delete {{ sub.sub_category_name }}">
+                    <i class="fas fa-trash-alt"></i> Delete
+                  </a>
+                  {% else %}
+                  <span class="text-muted">Admin Only</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Bootstrap (for dismissible alerts) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- DataTables & FixedColumns -->
+  <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/fixedColumns.dataTables.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      $('#subCategoriesTable').DataTable({
+      
+        scrollX: true,
+        scrollY: '300px',
+        scrollCollapse: true,
+        paging: false,
+        fixedColumns: {
+          left: 1
+        }
+      });
+
+      // Animate flash messages
+      const flashContainer = $('#flashMessageContainer');
+      if (flashContainer.length) {
+        flashContainer.fadeIn(500).delay(3000).fadeOut(1000);
+      }
+    });
+  </script>
+{% endblock %}

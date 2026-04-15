@@ -1,0 +1,341 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block body_class %} sidebar-mini {% endblock %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Ionicons -->
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <div id="notification" class="notification" style="display: none;">
+            <div class="notification-content">
+              <span id="notification-message"></span>
+              <button id="close-notification" class="close-btn">X</button>
+            </div>
+          </div>
+
+          <h1 class="m-0 text-dark">Dashboard</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Dashboard</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+<!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+              'check-circle' if category == 'success' 
+              else 'exclamation-circle' if category == 'warning' 
+              else 'times-circle' if category == 'danger' 
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  
+
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- Pupils -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+          <div class="inner">
+            <h5>Pupils</h5>
+            <p>List of Students</p>
+          </div>
+          <div class="icon"><i class="fas fa-user-graduate"></i></div>
+          <a href="/pupils" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+   <!-- Pupils -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+          <div class="inner">
+            <h5>Term</h5>
+            <p>List of Students</p>
+          </div>
+          <div class="icon"><i class="fas fa-user-graduate"></i></div>
+          <a href="/term" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+
+            <!-- ID Cards -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+          <div class="inner">
+            <h5>Subject assign</h5>
+            <p>assign</p>
+          </div>
+          <div class="icon"><i class="far fa-id-card"></i></div>
+          <a href="/subject_assign" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+               <!-- ID Cards -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+          <div class="inner">
+            <h5>Id Cards</h5>
+            <p>IDS</p>
+          </div>
+          <div class="icon"><i class="far fa-id-card"></i></div>
+          <a href="/gen_ids" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+
+               <!-- ID Cards -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+          <div class="inner">
+            <h5>Subject Unassign</h5>
+            <p>assign</p>
+          </div>
+          <div class="icon"><i class="far fa-id-card"></i></div>
+          <a href="/subject_unassign" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+
+
+      <!-- Results -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+          <div class="inner">
+            <h5>Results & Reports</h5>
+            <p>View Academic Performance</p>
+          </div>
+          <div class="icon"><i class="fas fa-chart-line"></i></div>
+          <a href="/results_index" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+      <!-- Divisions -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-indigo">
+          <div class="inner">
+            <h5>Divisions</h5>
+            <p>Data</p>
+          </div>
+          <div class="icon"><i class="fas fa-sitemap"></i></div>
+          <a href="/division" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Guardians -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-pink">
+          <div class="inner">
+            <h5>Guardians</h5>
+            <p>Parents' Information</p>
+          </div>
+          <div class="icon"><i class="fas fa-user-friends"></i></div>
+          <a href="/guardians" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+
+      <!-- Term Registration -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+          <div class="inner">
+            <h5>Register to Next Term</h5>
+            <p>Termly Pupil Registration</p>
+          </div>
+          <div class="icon"><i class="fas fa-user-check"></i></div>
+          <a href="/r_pupils" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Stream Assignment -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-cyan">
+          <div class="inner">
+            <h5>Stream Assignment</h5>
+            <p>Assign Pupils to Streams</p>
+          </div>
+          <div class="icon"><i class="fas fa-random"></i></div>
+          <a href="/stream_assign" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Promotions -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-lime">
+          <div class="inner">
+            <h5>Promotions</h5>
+            <p>Promote Pupils to Next Class</p>
+          </div>
+          <div class="icon"><i class="fas fa-level-up-alt"></i></div>
+          <a href="/r_pupils" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+ 
+
+
+
+      <!-- Subjects -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-light">
+          <div class="inner">
+            <h5>Subjects</h5>
+            <p>Subject List</p>
+          </div>
+          <div class="icon"><i class="fas fa-book"></i></div>
+          <a href="/subjects" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Study Years -->
+      <div class="col-lg-3 col-6">
+        <div class="small-box bg-orange">
+          <div class="inner">
+            <h5>Study Years</h5>
+            <p>Academic Years</p>
+          </div>
+          <div class="icon"><i class="fas fa-hourglass-start"></i></div>
+          <a href="/study_years" class="small-box-footer">More Info <i class="fas fa-angle-double-right"></i></a>
+        </div>
+      </div>
+
+
+
+
+
+    </div>
+
+    <!-- Optional Content Card -->
+    <div class="card">
+      <div class="card-header border-transparent">
+        <h3 class="card-title">Some List</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <!-- Dynamic content can go here -->
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+ 
+
+
+
+
+  const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+
+  // Copy SKU to clipboard
+  function copyToClipboard(sku) {
+    const tempInput = document.createElement('textarea');
+    tempInput.value = sku;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+
+    showNotification("SKU copied to clipboard: " + sku);
+  }
+</script>
+
+
+</script>
+
+
+{% endblock javascripts %}
+

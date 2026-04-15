@@ -1,0 +1,133 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit User {% endblock %}
+
+{% block body_class %}sidebar-mini layout-footer-fixed{% endblock body_class %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- Select2 -->
+<link rel="stylesheet" href="/static/assets/plugins/select2/css/select2.min.css">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit User</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/customers">User</a></li>
+            <li class="breadcrumb-item active">Edit User</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show mx-3" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary card-outline">
+        <div class="card-header">
+          <h3 class="card-title">Edit User Information</h3>
+        </div>
+
+        <form action="{{ url_for('authentication_blueprint.edit_user_profile', id=user.id) }}" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="other_name">Other Name</label>
+                <input type="text" class="form-control" id="other_name" name="other_name" value="{{ user.other_name }}">
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="password">Password (Leave blank to keep current)</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter a new password">
+              </div>
+
+              <div class="col-md-6 form-group align-self-end">
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="show_password">
+                  <label class="form-check-label" for="show_password">Show Password</label>
+                </div>
+              </div>
+
+             
+
+              <div class="col-md-6 form-group">
+                <label for="profile_image">Profile Image</label>
+                <input type="file" class="form-control-file" id="profile_image" name="profile_image" accept="image/*">
+                <small class="form-text text-muted">Upload a profile image (optional).</small>
+                {% if user.profile_image %}
+                  <img src="/static/uploads/{{ user.profile_image }}" alt="Profile Image" class="img-thumbnail mt-2" width="150">
+                {% else %}
+                  <p class="text-muted mt-2">No profile image available</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-center">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/plugins/select2/js/select2.full.min.js"></script>
+
+<script>
+  $(function () {
+    $('.select2').select2();
+
+    $('#show_password').on('change', function () {
+      const passwordField = $('#password');
+      passwordField.attr('type', this.checked ? 'text' : 'password');
+    });
+  });
+</script>
+{% endblock javascripts %}

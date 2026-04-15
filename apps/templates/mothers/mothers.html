@@ -1,0 +1,232 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  
+  <!-- AdminLTE Theme -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+  
+  <!-- Custom CSS for Flash Messages -->
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+              'check-circle' if category == 'success' 
+              else 'exclamation-circle' if category == 'warning' 
+              else 'times-circle' if category == 'danger' 
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>mothers List</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/mothers">mothers</a></li>
+            <li class="breadcrumb-item active">mothers List</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">mothers List</h3>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+              <div class="table-responsive">
+                <table id="categoriesTable" class="display stripe nowrap" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>mother's Name</th>
+                      <th>Pupil ID</th>
+                      <th>First Name</th>
+                      <th>Other Name</th>
+                      <th>Last Name</th>
+                      <th>Image</th>
+
+                      <th>Sign Image</th>
+
+
+                      <th>Edit</th>
+                      <th>Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for mother in mothers %}
+                    <tr class="gradeX">
+                      <!-- Display mother Name -->
+                      <td>{{ mother.first_name }} {{ mother.last_name }}</td>
+                      <td>{{ mother.pupil_id }}</td>
+                      <td>{{ mother.first_name }}</td>
+                      <td>{{ mother.other_name }}</td>
+                      <td>{{ mother.last_name }}</td>
+
+                      <td>
+                          {% if mother.image %}
+                            <img src="/static/uploads/{{ mother.image }}" alt="mother's Image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
+                          {% else %}
+                            <span>No Image</span>
+                          {% endif %}
+                      </td>
+
+                      <td>
+                          {% if mother.sign_image %}
+                            <img src="/static/uploads/{{ mother.sign_image }}" alt="mother's Sign Image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
+                          {% else %}
+                            <span>No Image</span>
+                          {% endif %}
+                      </td>
+
+
+
+                      <!-- Edit Button -->
+                      <td>
+                        <a href="/edit_mother/{{ mother.mother_id }}" 
+                           class="btn btn-sm btn-warning" 
+                           style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                          Edit
+                        </a>
+                      </td>
+
+                      <!-- Delete Button (Visible to Admin only) -->
+                      <td>
+                        {% if session['role'] == 'super_admin' %}
+                        <a href="/delete_mother/{{ mother.mother_id }}" 
+                           class="btn btn-sm btn-danger" 
+                           style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                           onclick="return confirm('Are you sure you want to delete {{ mother.first_name }}?')">
+                          Delete
+                        </a>
+                        {% else %}
+                        <span>—</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  
+  <!-- Bootstrap Bundle -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- AdminLTE -->
+  <script src="/static/assets/js/adminlte.js"></script>
+  
+  <!-- DataTables -->
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+
+  <!-- Custom JS for Flash Message Fade-in/Fade-out -->
+  <script>
+    $(document).ready(function() {
+      $('#categoriesTable').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        responsive: true,
+        stripeClasses: ['odd', 'even'],
+        language: {
+          paginate: {
+            next: 'Next',
+            previous: 'Previous'
+          }
+        }
+      });
+      
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Add User{% endblock %}
+
+{% block body_class %}sidebar-mini layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="/static/assets/plugins/select2/css/select2.min.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: 80%;
+      display: none;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1><i class="fas fa-user-plus mr-2"></i> Add New User</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/manage_users">Users</a></li>
+            <li class="breadcrumb-item active">Add User</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary card-outline">
+        <div class="card-header">
+          <h3 class="card-title">User Information</h3>
+        </div>
+
+        <form action="{{ url_for('authentication_blueprint.add_user') }}" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+          <div class="card-body">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                </div>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter username"
+                       required pattern="^[a-zA-Z0-9_]{3,20}$"
+                       title="Username must be 3-20 characters, alphanumeric with underscores.">
+              </div>
+              <small class="form-text text-muted">Only letters, numbers and underscores (3–20 characters).</small>
+            </div>
+
+            <div class="form-group">
+              <label for="first_name">First Name</label>
+              <input type="text" class="form-control" name="first_name" id="first_name" required placeholder="Enter first name">
+            </div>
+
+            <div class="form-group">
+              <label for="last_name">Last Name</label>
+              <input type="text" class="form-control" name="last_name" id="last_name" required placeholder="Enter last name">
+            </div>
+
+            <div class="form-group">
+              <label for="other_name">Other Name <small class="text-muted">(Optional)</small></label>
+              <input type="text" class="form-control" name="other_name" id="other_name" placeholder="Enter other name">
+            </div>
+
+            <div class="form-group">
+              <label for="name_sf">Name SF <small class="text-muted">(Optional)</small></label>
+              <input type="text" class="form-control" name="name_sf" id="name_sf" placeholder="Enter short form name">
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" class="form-control" name="password" id="password" required minlength="8"
+                     placeholder="Enter password" title="Password must be at least 8 characters.">
+              <small class="form-text text-muted">At least 8 characters.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="confirm_password">Confirm Password</label>
+              <input type="password" class="form-control" name="confirm_password" id="confirm_password" required placeholder="Confirm password">
+            </div>
+
+            <div class="form-group form-check">
+              <input type="checkbox" class="form-check-input" id="show_password">
+              <label class="form-check-label" for="show_password">Show Password</label>
+            </div>
+
+            {% if session['role'] == 'admin' or session['role'] == 'super_admin' %}
+              <div class="form-group">
+                <label for="role">Role</label>
+                <select class="form-control select2" id="role" name="role" required>
+                  <option value="" selected disabled>Select a role</option>
+                  <option value="class_teacher">Class Teacher</option>
+                  <option value="admin">Administrator</option>
+                  <option value="inventory_manager">Inventory Manager</option>
+                  <option value="other">Other</option>
+                  <option value="section_head">Head Of Section</option>
+                  <option value="department_head">Head Of Inventory Department</option>
+                  <option value="assistant_manager">Assistant Inventory Manager</option>
+                  <option value="head_ict">Head ICT</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="support_staff">Support Staff</option>
+                  <option value="dorm_master">Dorm Master</option>
+                  <option value="metron">Dorm Matron</option>
+                  <option value="dos">Director of Studies</option>
+                </select>
+              </div>
+            {% else %}
+              <div class="form-group">
+                <label for="role">Role</label>
+                <select class="form-control select2" id="role" name="role" required>
+                  <option value="" selected disabled>Select a role</option>
+                  <option value="other">Other</option>
+                  <option value="section_head">Head Of Section</option>
+                  <option value="department_head">Head Of Inventory Department</option>
+                </select>
+              </div>
+            {% endif %}
+
+            <div class="form-group">
+              <label for="profile_image">Profile Image <small class="text-muted">(Optional)</small></label>
+              <input type="file" class="form-control-file" id="profile_image" name="profile_image" accept="image/*">
+              <small class="form-text text-muted">Accepted formats: PNG, JPG, JPEG, GIF.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="sign_image">Signature Image <small class="text-muted">(Optional)</small></label>
+              <input type="file" class="form-control-file" id="sign_image" name="sign_image" accept="image/*">
+              <small class="form-text text-muted">Accepted formats: PNG, JPG, JPEG, GIF.</small>
+            </div>
+
+          </div>
+
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Submit</button>
+            <a href="/manage_users" class="btn btn-secondary ml-2">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/plugins/select2/js/select2.full.min.js"></script>
+  <script src="/static/assets/js/adminlte.min.js"></script>
+
+  <script>
+    $(function () {
+      $('.select2').select2();
+
+      if ($('#flashMessageContainer').length) {
+        $('#flashMessageContainer').fadeIn(500).delay(3000).fadeOut(1000);
+      }
+
+      $('#show_password').on('change', function () {
+        const type = this.checked ? 'text' : 'password';
+        $('#password, #confirm_password').attr('type', type);
+      });
+    });
+  </script>
+{% endblock %}

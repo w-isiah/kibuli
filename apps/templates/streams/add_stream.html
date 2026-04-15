@@ -1,0 +1,160 @@
+{% extends "layouts/base.html" %}
+{% block title %}Add Stream{% endblock %}
+{% block body_class %}sidebar-mini layout-fixed layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="container mt-3" role="alert" aria-live="assertive" aria-atomic="true">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <i class="fas
+        {% if category == 'success' %}fa-check-circle
+        {% elif category == 'warning' %}fa-exclamation-circle
+        {% elif category == 'danger' %}fa-times-circle
+        {% else %}fa-info-circle
+        {% endif %} mr-2" aria-hidden="true"></i>
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <h1>Add Stream</h1>
+    </div>
+  </section>
+
+  <!-- Add Stream Form -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary">
+        <div class="card-header">
+          <h3 class="card-title">Stream Information</h3>
+        </div>
+
+        <form method="POST" action="{{ url_for('streams_blueprint.add_stream') }}" novalidate>
+          <div class="card-body">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+              <label for="stream_name">Stream Name <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                id="stream_name"
+                name="stream_name"
+                class="form-control"
+                placeholder="Enter stream name"
+                required
+                autofocus
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="class_id">Class <span class="text-danger">*</span></label>
+              <select
+                id="class_id"
+                name="class_id"
+                class="form-control select2"
+                required
+                aria-describedby="classHelp"
+              >
+                <option value="" disabled selected>-- Select Class --</option>
+                {% for c in classes %}
+                <option value="{{ c.class_id }}">{{ c.class_name }}</option>
+                {% endfor %}
+              </select>
+              <small id="classHelp" class="form-text text-muted">Select the class for this stream.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="room_id">Room</label>
+              <select id="room_id" name="room_id" class="form-control select2" aria-describedby="roomHelp">
+                <option value="" selected>-- Select Room --</option>
+                {% for r in rooms %}
+                <option value="{{ r.room_id }}">{{ r.room_name }}</option>
+                {% endfor %}
+              </select>
+              <small id="roomHelp" class="form-text text-muted">Assign a room if available.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="teacher_id">Teacher in Charge <span class="text-danger">*</span></label>
+              <select
+                id="teacher_id"
+                name="teacher_id"
+                class="form-control select2"
+                required
+                aria-describedby="teacherHelp"
+              >
+                <option value="" disabled selected>Select Teacher</option>
+                {% for teacher in teachers %}
+                <option value="{{ teacher.id }}">
+                  {{ teacher.username }}
+                </option>
+                {% endfor %}
+              </select>
+              <small id="teacherHelp" class="form-text text-muted">Select the teacher responsible for this stream.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                class="form-control"
+                rows="3"
+                placeholder="Optional description..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="card-footer d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">Save Stream</button>
+            <a href="{{ url_for('streams_blueprint.streams') }}" class="btn btn-secondary">Back</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Initialize Select2 on all selects with class 'select2'
+    $('.select2').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+
+    // Auto-hide alerts
+    $(".alert").fadeTo(4000, 500).slideUp(500, function () {
+      $(this).alert('close');
+    });
+  });
+</script>
+{% endblock %}

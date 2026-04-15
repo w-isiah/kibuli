@@ -1,0 +1,255 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Father{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- AdminLTE Theme -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+  <link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+
+  <!-- Custom CSS for Flash Messages -->
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for pupil, message in messages %}
+          <div class="alert alert-{{ pupil }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+              'check-circle' if pupil == 'success' 
+              else 'exclamation-circle' if pupil == 'warning' 
+              else 'times-circle' if pupil == 'danger' 
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Father</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Fathers</a></li>
+            <li class="breadcrumb-item active">Edit Father</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <!-- Default box -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Edit Father</h3>
+
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="widget-content nopadding">
+                <form action="{{ url_for('fathers_blueprint.edit_father', father_id=father.father_id) }}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+                  <!-- CSRF Token for security -->
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+
+
+
+
+
+                  <!-- pupil Selection -->
+                  <div class="row mb-3">
+                    <label for="pupil_id" class="col-sm-2 col-form-label">Pupil:</label>
+                    <div class="col-sm-10">
+                      <select name="pupil_id" class="form-control select2" >
+                       {% for pupil in pupils %}
+                          <option value="{{ pupil.pupil_id }}" {% if pupil.pupil_id == father.pupil_id %} selected {% endif %}>
+                            {{ pupil.last_name }}|{{ pupil.first_name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+
+
+
+                  <!-- First Name -->
+                  <div class="form-group row mb-3">
+                    <label for="first_name" class="col-sm-2 col-form-label">First Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="first_name" class="form-control" value="{{ father.first_name }}" placeholder="Enter First Name" required>
+                    </div>
+                  </div>
+
+                  <!-- Other Name -->
+                  <div class="form-group row mb-3">
+                    <label for="other_name" class="col-sm-2 col-form-label">Other Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="other_name" class="form-control" value="{{ father.other_name }}" placeholder="Enter Other Name">
+                    </div>
+                  </div>
+
+                  <!-- Last Name -->
+                  <div class="form-group row mb-3">
+                    <label for="last_name" class="col-sm-2 col-form-label">Last Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="last_name" class="form-control" value="{{ father.last_name }}" placeholder="Enter Last Name" required>
+                    </div>
+                  </div>
+
+                  <!-- Current Image Display -->
+                  <div class="form-group row mb-3">
+                    <label for="image" class="col-sm-2 col-form-label">Current Image:</label>
+                    <div class="col-sm-10">
+                      {% if father.image %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ father.image) }}" alt="Father Image" style="max-width: 150px; max-height: 150px;">
+                      {% else %}
+                        <p>No image uploaded.</p>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Image Upload -->
+                  <div class="form-group row mb-3">
+                    <label for="image" class="col-sm-2 col-form-label">Upload New Image (Optional):</label>
+                    <div class="col-sm-10">
+                      <input type="file" name="image" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Current Sign Image Display -->
+                  <div class="form-group row mb-3">
+                    <label for="sign_image" class="col-sm-2 col-form-label">Current Sign Image:</label>
+                    <div class="col-sm-10">
+                      {% if father.sign_image %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ father.sign_image) }}" alt="Father Sign Image" style="max-width: 150px; max-height: 150px;">
+                      {% else %}
+                        <p>No sign image uploaded.</p>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Sign Image Upload -->
+                  <div class="form-group row mb-3">
+                    <label for="sign_image" class="col-sm-2 col-form-label">Upload New Sign Image (Optional):</label>
+                    <div class="col-sm-10">
+                      <input type="file" name="sign_image" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              Footer
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/assets/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/assets/js/demo.js"></script>
+<script src="/static/assets/js/mine.js"></script>
+
+ <script src="/static/assets/js/select2.min.js"></script>
+ <script>
+    $(document).ready(function () {
+
+       $('.select2').select2();
+
+
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock javascripts %}

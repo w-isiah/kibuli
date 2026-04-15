@@ -1,0 +1,282 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Fees Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0 text-dark">
+                        <i class="fas fa-vault mr-2"></i>Financial Overview
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Summary Cards -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ "{:,.0f}".format(stats.total_billed or 0) }}</h3>
+                            <p>Total Billed</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ "{:,.0f}".format(stats.total_collected or 0) }}</h3>
+                            <p>Cash Collected</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>{{ "{:,.0f}".format(stats.total_outstanding or 0) }}</h3>
+                            <p>Outstanding Debt</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            {% set rate = (stats.total_collected / stats.total_billed * 100) if stats.total_billed and stats.total_billed > 0 else 0 %}
+                            <h3>{{ rate | round(1) }}<sup style="font-size: 20px">%</sup></h3>
+                            <p>Collection Rate</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-chart-line"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fee Configuration Table -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">Fee Configuration (Price List)</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addFeeModal">
+                                    <i class="fas fa-plus mr-1"></i> Set New Fee
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Term</th>
+                                        <th>Class</th>
+                                        <th>Category</th>
+                                        <th class="text-right">Amount (UGX)</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Last Updated</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fee in fees %}
+                                    <tr>
+                                        <td><strong>{{ fee.year_name }}</strong></td>
+                                        <td>{{ fee.term_name }}</td>
+                                        <td><span class="badge badge-info">{{ fee.class_name or fee.class_id }}</span></td>
+                                        <td>{{ fee.category }}</td>
+                                        <td class="text-right text-bold text-primary">{{ "{:,.0f}".format(fee.amount) }}</td>
+                                        <td class="text-center"><span class="badge badge-success">Active</span></td>
+                                        <td><small class="text-muted">{{ fee.date_updated.strftime('%d %b %Y') if fee.date_updated else 'N/A' }}</small></td>
+                                        <td class="text-center">
+                                            <!-- Action buttons -->
+                                            <div class="btn-group">
+                                                <!-- Edit button triggers modal for this fee -->
+                                                <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#editFeeModal{{ fee.fee_id }}">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </button>
+                                                <!-- Delete button triggers modal for this fee -->
+                                                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteFeeModal{{ fee.fee_id }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Edit Fee Modal (per fee) -->
+                                            <div class="modal fade" id="editFeeModal{{ fee.fee_id }}" tabindex="-1" role="dialog">
+                                                <div class="modal-dialog" role="document">
+                                                    <form action="{{ url_for('finance_blueprint.edit_fee', fee_id=fee.fee_id) }}" method="POST">
+                                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-info">
+                                                                <h5 class="modal-title text-white">Edit Fee Rule</h5>
+                                                                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                                                            </div>
+                                                            <div class="modal-body text-left">
+                                                                <div class="form-group">
+                                                                    <label>Academic Year</label>
+                                                                    <select name="year_id" class="form-control" required>
+                                                                        {% for y in study_years %}
+                                                                        <option value="{{ y.year_id }}" {% if y.year_id == fee.study_year_id %}selected{% endif %}>
+                                                                            {{ y.year_name }}
+                                                                        </option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Term</label>
+                                                                    <select name="term_id" class="form-control" required>
+                                                                        {% for t in terms %}
+                                                                        <option value="{{ t.term_id }}" {% if t.term_id == fee.term_id %}selected{% endif %}>
+                                                                            {{ t.term_name }}
+                                                                        </option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Target Class</label>
+                                                                    <select name="class_id" class="form-control" required>
+                                                                        {% for c in classes %}
+                                                                        <option value="{{ c.class_id }}" {% if c.class_id == fee.class_id %}selected{% endif %}>
+                                                                            {{ c.class_name }}
+                                                                        </option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Amount (UGX)</label>
+                                                                    <input type="number" name="amount" class="form-control" value="{{ fee.amount }}" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Category</label>
+                                                                    <select name="category" class="form-control">
+                                                                        {% for cat in ['Tuition', 'Admission', 'Uniform', 'Transport', 'Other'] %}
+                                                                        <option value="{{ cat }}" {% if cat == fee.category %}selected{% endif %}>{{ cat }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-info">Update Changes</button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+
+                                            <!-- Delete Fee Modal (per fee) -->
+                                            <div class="modal fade" id="deleteFeeModal{{ fee.fee_id }}" tabindex="-1" role="dialog">
+                                                <div class="modal-dialog modal-sm" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-danger text-white">
+                                                            <h5 class="modal-title">Confirm Delete</h5>
+                                                            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Are you sure you want to delete the <strong>{{ fee.category }}</strong> fee for <strong>{{ fee.class_name }}</strong>?</p>
+                                                            <p class="text-muted small">This action cannot be undone.</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <form action="{{ url_for('finance_blueprint.delete_fee', fee_id=fee.fee_id) }}" method="POST">
+                                                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4 text-muted">No fee structures defined.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Add Fee Modal (global) -->
+<div class="modal fade" id="addFeeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <form action="{{ url_for('finance_blueprint.add_fee') }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white">Configure Billing Rule</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar mr-1"></i> Academic Year</label>
+                        <select name="year_id" class="form-control" required>
+                            <option value="">-- Choose Year --</option>
+                            {% for y in study_years %}
+                            <option value="{{ y.year_id }}">{{ y.year_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-clock mr-1"></i> Specific Term</label>
+                        <select name="term_id" class="form-control" required>
+                            <option value="">-- Choose Term --</option>
+                            {% for t in terms %}
+                            <option value="{{ t.term_id }}">{{ t.term_name }} ({{ t.year_name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-chalkboard mr-1"></i> Target Class</label>
+                        <select name="class_id" class="form-control" required>
+                            <option value="">-- Choose Class --</option>
+                            {% for c in classes %}
+                            <option value="{{ c.class_id }}">{{ c.class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select name="category" class="form-control">
+                                    <option value="Tuition">Tuition</option>
+                                    <option value="Admission">Admission</option>
+                                    <option value="Uniform">Uniform</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Amount (UGX)</label>
+                                <input type="number" name="amount" class="form-control" placeholder="e.g. 500000" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save Billing Rule</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,364 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Items List {% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" rel="stylesheet">
+
+<!-- Icons & Fonts -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
+
+<!-- Stylesheets -->
+<link href="/static/assets/css/adminlte.min.css" rel="stylesheet">
+<link href="/static/assets/css/mine.css" rel="stylesheet">
+<link href="/static/assets/css/select2.min.css" rel="stylesheet">
+
+<!-- DataTables -->
+<link href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css" rel="stylesheet">
+<link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+
+<!-- Flash Message Styles -->
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+  .alert-dismissible {
+    padding-right: 30px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="container mt-3" id="flashMessageContainer">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <strong>{{ message }}</strong>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1>Items</h1>
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="/index">Home</a></li>
+          <li class="breadcrumb-item active"><a href="/products">Items</a></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between">
+          <h3 class="card-title mb-0">Item List</h3>
+          <div>
+            <a href="/add_product" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus-circle"></i> Add Item
+            </a>
+            <a href="/inventory_index" class="btn btn-info btn-sm">
+              <i class="fas fa-list"></i> Inventory Dashboard
+            </a>
+
+            <a id="exportExcelButton" class="btn btn-info btn-sm">
+              <i class="fas fa-file-excel"></i> Export to Excel
+            </a>
+
+
+
+          </div>
+        </div>
+
+        <div class="card-body table-responsive">
+          <form method="get" class="mb-3">
+            <div class="row">
+
+              <!-- Item Number -->
+              <div class="col-md-2 mb-2">
+                <label for="sku">Item Number</label>
+                <input type="text" name="sku" id="sku" class="form-control" placeholder="Item Number" value="{{ request.args.get('sku', '') }}">
+              </div>
+
+              <!-- Unique Number -->
+              <div class="col-md-2 mb-2">
+                <label for="unique_number">Unique Number</label>
+                <input type="text" name="unique_number" id="unique_number" class="form-control" placeholder="Unique Number" value="{{ request.args.get('unique_number', '') }}">
+              </div>
+
+              <!-- Item Name -->
+              <div class="col-md-2 mb-2">
+                <label for="name">Item Name</label>
+                <input type="text" name="name" id="name" class="form-control" placeholder="Item Name" value="{{ request.args.get('name', '') }}">
+              </div>
+
+              <!-- Category -->
+              <div class="col-md-3 mb-2">
+                <label for="category_id">Department</label>
+                <select name="category" id="category_id" class="form-control select2">
+                  <option value="">All Departments</option>
+                  {% for category in categories %}
+                  <option value="{{ category }}" {% if request.args.get('category') == category %}selected{% endif %}>{{ category }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Sub Category -->
+              <div class="col-md-3 mb-2" id="sub_category_container" style="display: none;">
+                <label for="sub_category_id">Sections</label>
+                <select name="sub_category_id" id="sub_category_id" class="form-control select2">
+                  <option value="">Select a Section</option>
+                </select>
+              </div>
+
+            </div>
+
+            <div class="row mt-2">
+              <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="/products" class="btn btn-secondary ml-2">
+                  <i class="fas fa-sync-alt"></i> Clear
+                </a>
+              </div>
+            </div>
+          </form>
+
+
+
+
+
+          <table id="productTable" class="display nowrap stripe" style="width:100%">
+            <thead>
+              <tr>
+                <th>Item Number</th>
+                <th>Item Unique Number</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Section</th>
+                <th>Quantity</th>
+                <th>Description</th>
+                <th>Image</th>
+                <th>Edit</th>
+                <th>Del</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for i in products %}
+              <tr>
+                <td>
+                  {{ i.sku }}
+                  <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('{{ i.sku }}')">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </td>
+                <td>{{ i.unique_number }}</td>
+                <td>
+                  {{ i.name }}</td>
+                  <td> {{ i.category_name }} </td>
+                 <td>
+                  {% if i.sub_category_name and i.sub_category_name != 'None' %}
+                  {{ i.sub_category_name }}
+                  {% endif %}
+                </td>
+                <td>{{ i.quantity }}</td>
+                <td><small>{{ i.description }}</small></td>
+                <td>
+                  {% if i.image %}
+                  <img src="/static/uploads/{{ i.image }}" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                  {% else %}
+                  <span>No Image</span>
+                  {% endif %}
+                </td>
+                
+                <td>{% if session['role'] == 'super_admin' %}<a href="/delete_product/{{ i.ProductID }}" class="btn btn-danger btn-sm">Del</a>  {% else %}
+                  <span>—</span>
+                {% endif %}</td>
+                <td><a href="/edit_product/{{ i.ProductID }}" class="btn btn-warning btn-sm">Edit</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Notification -->
+<div id="notification" class="notification" style="display: none;">
+  <div class="notification-content">
+    <span id="notification-message"></span>
+    <button id="close-notification" class="close-btn">X</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- jQuery (latest) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Bootstrap Bundle -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- AdminLTE -->
+<script src="/static/assets/js/adminlte.js"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+
+<!-- Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
+<!-- Custom JS -->
+<script src="/static/assets/js/mine.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+
+
+<script>
+  $(document).ready(function () {
+    $('#productTable').DataTable({
+      fixedColumns: { left: 1, right: 1 },
+      paging: false,
+      scrollX: true,
+      scrollY: '300px',
+      scrollCollapse: true,
+      stateSave: true
+    });
+
+
+    $('.select2').select2();
+
+      // Flash message animation
+      const flashContainer = $('#flashMessageContainer');
+      if (flashContainer.length) {
+        flashContainer.fadeIn(500).delay(3000).fadeOut(1000);
+      }
+
+      window.copyToClipboard = function (sku) {
+        const tempInput = document.createElement('textarea');
+        tempInput.value = sku;
+        document.body.appendChild(tempInput);
+        tempInput.select();  
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        showNotification("SKU copied to clipboard: " + sku);
+      };
+
+      window.showNotification = function (message) {
+        $('#notification-message').text(message);
+        $('#notification').fadeIn();
+        setTimeout(() => $('#notification').fadeOut(), 7000);
+      };
+
+      $('#close-notification').on('click', function () {
+        $('#notification').fadeOut();
+      });
+
+
+      $('#exportExcelButton').click(function (e) {
+        e.preventDefault();
+
+        const table = document.getElementById('productTable');
+        const wb = XLSX.utils.book_new();
+        const ws_data = [];
+
+  // Get rows from the table
+  const rows = table.querySelectorAll('tr');
+
+  rows.forEach((row) => {
+    const cells = Array.from(row.querySelectorAll('th, td'))
+      .slice(0, -2)  // exclude last 2 columns
+      .map(cell => cell.innerText.trim());
+      ws_data.push(cells);
+    });
+
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  XLSX.utils.book_append_sheet(wb, ws, 'Items');
+  XLSX.writeFile(wb, 'Items_List.xlsx');
+});
+
+
+
+
+      let allSubCategories = [];
+
+      function loadSubCategories() {
+        fetch('/sub_category_data')
+        .then(response => response.json())
+        .then(data => {
+          allSubCategories = data;
+          updateSubCategoryDropdown();
+        })
+        .catch(error => {
+          console.error('Failed to load sub-categories:', error);
+        });
+      }
+
+      function updateSubCategoryDropdown() {
+        const selectedCategory = $('#category_id').val();
+        const subCategoryContainer = $('#sub_category_container');
+        const subCategorySelect = $('#sub_category_id');
+
+        subCategorySelect.empty().append('<option value="">Select a Section</option>');
+        subCategoryContainer.hide();
+
+        if (!selectedCategory) return;
+
+        const filtered = allSubCategories.filter(sc => sc.category_name === selectedCategory);
+
+        if (filtered.length) {
+          filtered.forEach(sc => {
+            subCategorySelect.append(`<option value="${sc.sub_category_id}">${sc.sub_category_name}</option>`);
+          });
+          subCategoryContainer.show();
+        } else {
+          subCategorySelect.append('<option value="">No Section available</option>');
+          subCategoryContainer.show();
+        }
+      }
+
+      $('#category_id').on('change', updateSubCategoryDropdown);
+
+      loadSubCategories();
+
+
+
+
+    });
+  </script>
+  {% endblock %}

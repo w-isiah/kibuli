@@ -1,0 +1,145 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Add a Location {% endblock %}
+
+{% block body_class %} sidebar-mini layout-footer-fixed {% endblock body_class %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+
+  .alert.alert-dismissible {
+    padding-right: 30px;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Add a Location</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/locations">Locations</a></li> 
+            <li class="breadcrumb-item active">Add Location</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title mb-0">Add New Location</h3>
+              <div class="btn-group ms-auto" role="group">
+                <a href="/locations" class="btn btn-primary btn-sm">Location List</a> 
+                <a href="/inventory_index" class="btn btn-success btn-sm">Inventory Dashboard</a>
+              </div>
+            </div>
+
+            <form action="{{ url_for('locations_blueprint.add_location') }}" method="post"> 
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+              <div class="card-body">
+                <!-- Location Name -->
+                <div class="control-group mb-3">
+                  <label class="control-label" for="location-name">Location Name:</label>
+                  <div class="controls">
+                    <input type="text" id="location-name" name="name" placeholder="Enter Location Name (e.g., IT Lab, Hall)" 
+                      class="form-control form-control-sm border-info shadow-sm" required aria-describedby="location-name-help" />
+                    <span id="location-name-help" class="help-block text-muted">Please provide a name for the physical location.</span>
+                  </div>
+                </div>
+
+                <!-- Room Dropdown -->
+                <div class="control-group mb-3">
+                  <label class="control-label" for="room-id">Room (optional):</label>
+                  <div class="controls">
+                    <select id="room-id" name="room_id" class="form-control form-control-sm border-info shadow-sm">
+                      <option value="">-- Select Room --</option>
+                      {% for room in rooms %}
+                        <option value="{{ room.room_id }}">{{ room.room_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="control-group mb-3">
+                  <label class="control-label" for="description">Description (optional):</label>
+                  <div class="controls">
+                    <textarea id="description" name="description" class="form-control form-control-sm border-info shadow-sm" rows="3" placeholder="Add additional notes about this location..."></textarea>
+                  </div>
+                </div>
+
+              </div> <!-- /.card-body -->
+
+              <div class="card-footer">
+                <button type="submit" class="btn btn-sm btn-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Save Location</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/js/demo.js"></script>
+
+<script>
+  $(document).ready(function() {
+    if ($('#flashMessageContainer').length) {
+      $('#flashMessageContainer').fadeIn(500).delay(3000).fadeOut(1000);
+    }
+  });
+</script>
+{% endblock javascripts %}

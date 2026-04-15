@@ -1,0 +1,240 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Users{% endblock %}
+{% block body_class %}sidebar-mini layout-fixed{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Fonts & AdminLTE CSS -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+<!-- Plugins -->
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    width: 80%;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1><i class="fas fa-users"></i> Users</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Users</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Table Section -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mb-0">User List</h3>
+          <a href="/add_user" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus-circle"></i> Add a User
+          </a>
+        </div>
+
+        <div class="card-body">
+          <table id="accounts" class="stripe row-border order-column" style="width:100%">
+            <thead class="thead-dark">
+              <tr>
+                <th>Profile Image</th>
+                <th>Signature Image</th>
+                <th>Username</th>
+                <th>Name SF</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Section Roles</th>
+                <th>Department Roles</th>
+                <th>Activity Logs</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <!-- Profile Image -->
+                <td>
+                  {% if user.profile_image %}
+                    <img src="/static/uploads/{{ user.profile_image }}" alt="Profile Image" class="img-thumbnail" width="50" height="50">
+                  {% else %}
+                    <img src="/static/assets/img/default-profile.png" alt="Default Profile Image" class="img-thumbnail" width="50" height="50">
+                  {% endif %}
+                </td>
+
+                <!-- Signature Image -->
+                <td>
+                  {% if user.sign_image %}
+                    <img src="/static/uploads/{{ user.sign_image }}" alt="Signature Image" class="img-thumbnail" width="50" height="50">
+                  {% else %}
+                    <img src="/static/assets/img/default-sign.png" alt="Default Signature Image" class="img-thumbnail" width="50" height="50">
+                  {% endif %}
+                </td>
+
+                <!-- Username -->
+                <td>{{ user.username }}</td>
+                <td>{{ user.name_sf or '-' }}</td>
+                <td>{{ user.full_name or '-' }}</td>
+                <td>{{ user.role }}</td>
+
+                <!-- User Status -->
+                <td id="user-status-{{ user.id }}">
+                  {% if user.is_online %}
+                    <span class="badge badge-success">Online</span>
+                  {% else %}
+                    <span class="badge badge-danger">Offline</span>
+                  {% endif %}
+                </td>
+
+                <!-- Section & Department Roles -->
+                <td>
+                  {% if user.role == 'section_head' %}
+                    <a href="/view_user/{{ user.id }}" class="btn btn-warning btn-sm">
+                      <i class="fas fa-eye"></i> View
+                    </a>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if user.role == 'department_head' %}
+                    <a href="/view_user_cat_roles/{{ user.id }}" class="btn btn-warning btn-sm">
+                      <i class="fas fa-eye"></i> View
+                    </a>
+                  {% endif %}
+                </td>
+
+                <!-- Activity Logs -->
+                <td>
+                  <a href="/activity_logs/{{ user.id }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-history"></i> View
+                  </a>
+                </td>
+
+                <!-- Actions -->
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="/edit_user/{{ user.id }}" class="btn btn-info btn-sm" title="Edit User">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ url_for('authentication_blueprint.delete_user', id=user.id) }}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Are you sure you want to delete user: {{ user.username }}?');"
+                       title="Delete User">
+                      <i class="fas fa-trash-alt"></i>
+                    </a>
+                    {% if user.is_online %}
+                    <a href="{{ url_for('authentication_blueprint.force_logout', user_id=user.id) }}"
+                       class="btn btn-warning btn-sm"
+                       onclick="return confirm('Force sign out {{ user.username }}?');"
+                       title="Force Logout">
+                      <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- Core Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+
+<!-- Plugins -->
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/static/assets/js/mine.js"></script>
+
+<script>
+  $(function () {
+    // Initialize DataTable
+    $('#accounts').DataTable({
+      fixedColumns: {
+        left: 2,
+        right: 1
+      },
+      paging: false,
+      scrollCollapse: true,
+      scrollX: true,
+      scrollY: 300
+    });
+
+    // Periodically update user online status
+    function updateUserStatus(userId) {
+      $.get('/get_user_status/' + userId, function(response) {
+        const badge = response.status === 'online'
+          ? '<span class="badge badge-success">Online</span>'
+          : '<span class="badge badge-danger">Offline</span>';
+        $('#user-status-' + userId).html(badge);
+      });
+    }
+
+    setInterval(function () {
+      {% for user in users %}
+      updateUserStatus({{ user.id }});
+      {% endfor %}
+    }, 10000); // every 10 seconds
+  });
+
+  // Auto-dismiss flash messages
+  $(document).ready(function () {
+    setTimeout(function () {
+      $('.alert').fadeTo(500, 0).slideUp(500, function () {
+        $(this).remove();
+      });
+    }, 5000); // fades out after 5 seconds
+  });
+</script>
+{% endblock %}

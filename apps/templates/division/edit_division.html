@@ -1,0 +1,161 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Division{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Fonts & Icons -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<!-- Theme -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+<!-- Flash Message Styles -->
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    max-width: 600px;
+    width: 90%;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    margin-bottom: 10px;
+    padding: 0.75rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+  }
+  .alert i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+  }
+  .alert .close {
+    margin-left: auto;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{
+              'check-circle' if category == 'success'
+              else 'exclamation-circle' if category == 'warning'
+              else 'times-circle' if category == 'danger'
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Division</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/division">Divisions</a></li>
+            <li class="breadcrumb-item active">Edit Division</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Edit Division Details</h3>
+            </div>
+
+            <div class="card-body">
+              <form action="{{ url_for('division_blueprint.edit_division', division_id=division.division_id) }}" method="POST" class="form-horizontal">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Division Name -->
+                <div class="row mb-3">
+                  <label for="division_name" class="col-sm-2 col-form-label">Division Name:</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="division_name" class="form-control" value="{{ division.division_name }}" maxlength="2" required pattern="^[A-Za-z0-9]{1,2}$">
+                  </div>
+                </div>
+
+                <!-- Min Score -->
+                <div class="row mb-3">
+                  <label for="min_score" class="col-sm-2 col-form-label">Minimum Score:</label>
+                  <div class="col-sm-10">
+                    <input type="number" name="min_score" class="form-control" value="{{ division.min_score }}" required>
+                  </div>
+                </div>
+
+                <!-- Max Score -->
+                <div class="row mb-3">
+                  <label for="max_score" class="col-sm-2 col-form-label">Maximum Score:</label>
+                  <div class="col-sm-10">
+                    <input type="number" name="max_score" class="form-control" value="{{ division.max_score }}" required>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-sm btn-success">Update Division</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card-footer">
+              <small class="text-muted">Ensure the score range does not overlap with other divisions.</small>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script>
+  $(document).ready(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+{% endblock javascripts %}

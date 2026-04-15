@@ -1,0 +1,205 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dormitories List{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
+
+<link href="/static/assets/css/adminlte.min.css" rel="stylesheet">
+<link href="/static/assets/css/mine.css" rel="stylesheet">
+<link href="/static/assets/css/select2.min.css" rel="stylesheet">
+
+<link href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css" rel="stylesheet">
+
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    max-width: 600px;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+  .alert-dismissible {
+    padding-right: 30px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alert-container" id="flashMessageContainer">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <i class="fas fa-{{
+        'check-circle' if category == 'success'
+        else 'exclamation-circle' if category == 'warning'
+        else 'times-circle' if category == 'danger'
+        else 'info-circle' }}"></i>
+      <strong>{{ message }}</strong>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1>Dormitories</h1>
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="/index">Home</a></li>
+          <li class="breadcrumb-item active">Dormitories</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between">
+          <h3 class="card-title mb-0">Dormitory List</h3>
+          <div>
+            <a href="{{ url_for('dorms_blueprint.add_dorms') }}" class="btn btn-success btn-sm">
+              <i class="fas fa-plus-circle"></i> Add Dormitory
+            </a>
+
+            <a href="{{ url_for('dorms_blueprint.add_dorms') }}" class="btn btn-success btn-sm">
+              <i class="fas fa-plus-circle"></i>Inventory
+            </a>
+
+            </div>
+        </div>
+
+        <div class="card-body table-responsive">
+          <table id="dormsTable" class="display nowrap stripe" style="width:100%">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Description</th>
+                <th>Dorm Matron/Master</th>
+                <th>Edit</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for dorm in dorms %}
+              <tr>
+                <td>{{ dorm.dorm_name }}</td>
+                <td>{{ dorm.gender }}</td>
+                <td>{{ dorm.dorm_description }}</td>
+                <td>
+                  {% if dorm.teacher_first_name and dorm.teacher_last_name %}
+                    {{ dorm.teacher_first_name }} {{ dorm.teacher_last_name }}
+                  {% else %}
+                    No Dorm Master
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="/edit_dorms/{{ dorm.dormitory_id }}" class="btn btn-warning btn-sm">
+                    Edit
+                  </a>
+                </td>
+                <td>
+                  {% if session['role'] == 'admin' %}
+                  <a href="/delete_dorms/{{ dorm.dormitory_id }}"
+                     class="btn btn-danger btn-sm"
+                     onclick="return confirm('Are you sure you want to delete {{ dorm.dorm_name }}?')">
+                    <i class="fas fa-trash"></i> Del
+                  </a>
+                  {% else %}
+                  <span>—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="notification" class="notification" style="display: none;">
+  <div class="notification-content">
+    <span id="notification-message"></span>
+    <button id="close-notification" class="close-btn">X</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script src="/static/assets/js/adminlte.js"></script>
+
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+
+<script src="/static/assets/js/mine.js"></script>
+
+
+<script>
+  $(document).ready(function () {
+    // Initialize DataTables (using simpler settings since no filtering was present)
+    $('#dormsTable').DataTable({
+      paging: true,
+      searching: true,
+      ordering: true,
+      responsive: true,
+      scrollX: true,
+      // Removed fixedColumns and scrollY/scrollCollapse to simplify and avoid conflict,
+      // unless you need those features for this table.
+    });
+
+    // Flash message animation (used fixed position style)
+    const flashContainer = $('#flashMessageContainer');
+    if (flashContainer.length) {
+      flashContainer.fadeIn(500).delay(3000).fadeOut(1000);
+    }
+
+    // Placeholder for copyToClipboard or other functions if needed later
+    window.showNotification = function (message) {
+      $('#notification-message').text(message);
+      $('#notification').fadeIn();
+      setTimeout(() => $('#notification').fadeOut(), 7000);
+    };
+
+    $('#close-notification').on('click', function () {
+      $('#notification').fadeOut();
+    });
+
+    // Select2 initialization (kept for future use if dropdowns are added)
+    $('.select2').select2();
+  });
+</script>
+{% endblock %}

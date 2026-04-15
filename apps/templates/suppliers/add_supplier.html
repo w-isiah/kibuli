@@ -1,0 +1,137 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Add a Supplier/Donor {% endblock %}
+
+{% block body_class %} sidebar-mini layout-footer-fixed {% endblock body_class %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+
+  .alert.alert-dismissible {
+    padding-right: 30px;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container" id="flashMessageContainer">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Add a Supplier/Donor</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/suppliers">Suppliers</a></li>
+            <li class="breadcrumb-item active">Add Supplier</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-6 offset-md-3 col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title mb-0">Add New Supplier/Partner</h3>
+              <div class="btn-group ms-auto" role="group">
+                <a href="/suppliers" class="btn btn-primary btn-sm">Supplier List</a>
+                <a href="/inventory_index" class="btn btn-success btn-sm">Inventory Dashboard</a>
+              </div>
+            </div>
+
+            <form action="{{ url_for('suppliers_blueprint.add_supplier') }}" method="post">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+              <div class="card-body">
+                <div class="form-group mb-3">
+                  <label class="control-label" for="supplier-name">Name <span class="text-danger">*</span>:</label>
+                  <input type="text" id="supplier-name" name="name" placeholder="Enter Company or Individual Name"
+                    class="form-control form-control-sm border-info shadow-sm" required aria-describedby="supplier-name-help" />
+                  <small id="supplier-name-help" class="form-text text-muted">The name of the vendor, donor, or financial institution.</small>
+                </div>
+
+                <div class="form-group mb-3">
+                  <label class="control-label" for="contact-details">Contact Details (Email/Phone):</label>
+                  <input type="text" id="contact-details" name="contact_details" placeholder="Email, Phone, or Address"
+                    class="form-control form-control-sm border-info shadow-sm" aria-describedby="contact-details-help" />
+                  <small id="contact-details-help" class="form-text text-muted">Primary contact information (optional).</small>
+                </div>
+
+                <div class="form-group mb-3">
+                  <label class="control-label" for="supplier-type">Type:</label>
+                  <select id="supplier-type" name="type" class="form-control form-control-sm border-info shadow-sm">
+                    <option value="Supplier" selected>Supplier/Vendor</option>
+                    <option value="Financier">Financier (Bank/Leasing)</option>
+                    <option value="Donor">Donor/Sponsor</option>
+                    <option value="Other">Other Partner</option>
+                  </select>
+                  <small class="form-text text-muted">Classification of the partner organization.</small>
+                </div>
+              </div> <div class="card-footer">
+                <button type="submit" class="btn btn-sm btn-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Save Supplier</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/js/demo.js"></script>
+
+<script>
+  $(document).ready(function() {
+    // Flash message fade-in and fade-out effect
+    if ($('#flashMessageContainer').length) {
+      $('#flashMessageContainer').fadeIn(500).delay(3000).fadeOut(1000);
+    }
+  });
+</script>
+{% endblock javascripts %}

@@ -1,0 +1,185 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Subject Comments{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- AdminLTE -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- Select2 -->
+  <link rel="stylesheet" href="/static/assets/css/select2.min.css">
+  <!-- Custom -->
+  <link rel="stylesheet" href="/static/assets/css/mine.css">
+
+  <!-- DataTables & FixedColumns (from datatables.net CDN) -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.0.7/css/dataTables.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.0/css/fixedColumns.dataTables.min.css">
+
+  <style>
+    div.dataTables_wrapper {
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    th, td {
+      white-space: nowrap;
+    }
+
+    .dataTables_scrollBody {
+      max-height: 400px !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alert-container" id="flashMessageContainer">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <i class="fas fa-{{ 
+        'check-circle' if category == 'success' 
+        else 'exclamation-circle' if category == 'warning' 
+        else 'times-circle' if category == 'danger' 
+        else 'info-circle' }}"></i>
+      <span>{{ message }}</span>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1 class="mb-0">Subject Comments</h1>
+        </div>
+        <div class="col-sm-6 text-sm-right">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Subject Comments</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title mb-0">Terms Table</h3>
+          <a href="/add_subject_comments" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus-circle"></i> Add Comments
+          </a>
+        </div>
+
+        <div class="card-body">
+          {% if subject_comments %}
+          <div class="table-responsive">
+            <table id="subjectCommentsTable" class="display nowrap stripe row-border order-column" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Stream</th>
+                  <th>Teacher</th>
+                  <th>Min Score</th>
+                  <th>Max Score</th>
+                  <th>Comment</th>
+                  <th>Created At</th>
+                  <th>Updated At</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for comment in subject_comments %}
+                <tr>
+                  <td>{{ comment.subject_name or 'N/A' }}</td>
+                  <td>{{ comment.stream_name or 'All' }}</td>
+                  <td>{{ comment.teacher_name or 'N/A' }}</td>
+                  <td>{{ comment.min_score }}</td>
+                  <td>{{ comment.max_score }}</td>
+                  <td>{{ comment.comment }}</td>
+                  <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '—' }}</td>
+                  <td>{{ comment.updated_at.strftime('%Y-%m-%d %H:%M') if comment.updated_at else '—' }}</td>
+                  <td>
+                    <a href="{{ url_for('subject_comments_blueprint.edit_subject_comments', comment_id=comment.comment_id) }}" 
+                       class="btn btn-sm btn-warning" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                  </td>
+                  <td>
+                    {% if session['role'] == 'super_admin' %}
+                    <a href="{{ url_for('subject_comments_blueprint.delete_subject_comments', comment_id=comment.comment_id) }}" 
+                       class="btn btn-sm btn-danger" 
+                       onclick="return confirm('Delete comment for subject {{ comment.subject_name }}?')"
+                       title="Delete">
+                      <i class="fas fa-trash-alt"></i>
+                    </a>
+                    {% else %}
+                    <span>—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>No subject comments found.</p>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/2.0.7/js/dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/5.0.0/js/dataTables.fixedColumns.min.js"></script>
+
+  <!-- Bootstrap & AdminLTE -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.js"></script>
+
+  <!-- Select2 -->
+  <script src="/static/assets/js/select2.min.js"></script>
+  <script src="/static/assets/js/mine.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      $('#subjectCommentsTable').DataTable({
+        scrollX: true,
+        scrollY: '400px',
+        scrollCollapse: true,
+        paging: false,
+        fixedColumns: {
+          leftColumns: 1,
+          rightColumns: 1
+        }
+      });
+
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

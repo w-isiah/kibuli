@@ -1,0 +1,133 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit User Roles{% endblock %}
+
+{% block body_class %}sidebar-mini layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <!-- Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit User Roles</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/users">Users</a></li>
+            <li class="breadcrumb-item active">Edit User Roles</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show mx-3" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Profile Content -->
+  <section class="content">
+    <div class="container-fluid">
+      
+      <!-- User Info -->
+      <div class="card card-primary card-outline">
+        <div class="card-body box-profile">
+          <div class="text-center">
+            {% if user.profile_image %}
+              <img class="profile-user-img img-fluid img-circle"
+                   src="/static/uploads/{{ user.profile_image }}"
+                   alt="Profile Image">
+            {% else %}
+              <img class="profile-user-img img-fluid img-circle"
+                   src="/static/assets/img/default-profile.png"
+                   alt="Default Profile Image">
+            {% endif %}
+          </div>
+
+          <h3 class="profile-username text-center">{{ user.first_name }} {{ user.last_name }}</h3>
+          <p class="text-muted text-center">{{ user.role|title }}</p>
+
+          <ul class="list-group list-group-unbordered mb-3">
+            <li class="list-group-item"><b>Username</b> <span class="float-right">{{ user.username }}</span></li>
+            <li class="list-group-item"><b>First Name</b> <span class="float-right">{{ user.first_name }}</span></li>
+            <li class="list-group-item"><b>Last Name</b> <span class="float-right">{{ user.last_name }}</span></li>
+            <li class="list-group-item"><b>Other Name</b> <span class="float-right">{{ user.other_name or 'N/A' }}</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Categories as Roles -->
+      <div class="card card-secondary">
+        <div class="card-header">
+          <h3 class="card-title">Assign Categories</h3>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('authentication_blueprint.edit_user_cat_roles', id=user.id) }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% if all_categories %}
+              <div class="form-group">
+                {% for cat in all_categories %}
+                  <div class="custom-control custom-checkbox mb-2">
+                    <input type="checkbox"
+                           class="custom-control-input"
+                           id="cat{{ cat.CategoryID }}"
+                           name="categories"
+                           value="{{ cat.CategoryID }}"
+                           {% if cat.CategoryID in user_category_ids %}checked{% endif %}>
+                    <label class="custom-control-label" for="cat{{ cat.CategoryID }}">
+                      {{ cat.name }}
+                      {% if cat.description %}
+                        <small class="text-muted d-block">{{ cat.description }}</small>
+                      {% endif %}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p>No categories available.</p>
+            {% endif %}
+            
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Update Roles</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="text-center mt-3 mb-4">
+        <a href="{{ url_for('home_blueprint.index') }}" class="btn btn-primary">Back to Home</a>
+      </div>
+
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+{% endblock %}

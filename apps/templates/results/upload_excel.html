@@ -1,0 +1,236 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Manage Results{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=swap">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="/static/assets/css/select2.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1050;
+      width: 90%;
+      max-width: 600px;
+      display: none;
+    }
+    .alert i { margin-right: 10px; }
+    #streamSection { display: none; margin-top: 15px; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'warning' else 'times-circle' if category == 'danger' else 'info-circle' }}"></i>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <h1 class="mb-2">Manage Results</h1>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+
+      <!-- Template Download -->
+      <div class="card card-primary card-outline">
+        <div class="card-header"><h3 class="card-title">Download Template</h3></div>
+        <div class="card-body">
+
+          <form method="GET" action="{{ url_for('results_blueprint.pdownload_template') }}">
+            <div class="row">
+              <!-- Class -->
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="classSelect">Class</label>
+                  <select name="class_id" id="classSelect" class="form-control select2" required>
+                    <option value="">-- Select Class --</option>
+                    {% for c in class_list %}
+                      <option value="{{ c.class_id }}" {% if c.class_id == selected_class_id %}selected{% endif %}>{{ c.class_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Stream -->
+              <div class="col-md-4" id="streamSection">
+                <label>Stream</label>
+                <div id="streamCheckboxContainer"></div>
+              </div>
+
+              <!-- Study Year -->
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>Study Year</label>
+                  <select name="year_id" class="form-control select2" required>
+                    <option value="">-- Select Study Year --</option>
+                    {% for y in study_years %}
+                      <option value="{{ y.year_id }}" {% if y.year_id == selected_study_year_id %}selected{% endif %}>{{ y.study_year }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Term -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Term</label>
+                  <select name="term_id" class="form-control select2" required>
+                    <option value="">-- Select Term --</option>
+                    {% for t in terms %}
+                      <option value="{{ t.term_id }}" {% if t.term_id == selected_term_id %}selected{% endif %}>{{ t.term_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Subject -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Subject</label>
+                  <select name="subject_id" class="form-control select2" required>
+                    <option value="">-- Select Subject --</option>
+                    {% for s in subjects %}
+                      <option value="{{ s.subject_id }}" {% if s.subject_id == selected_subject_id %}selected{% endif %}>{{ s.subject_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Assessment -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Assessment</label>
+                  <select name="assessment_id" class="form-control select2" required>
+                    <option value="">-- Select Assessment --</option>
+                    {% for a in assessments %}
+                      <option value="{{ a.assessment_id }}" {% if a.assessment_id == selected_assessment_id %}selected{% endif %}>{{ a.assessment_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Download Button -->
+              <div class="col-md-6 d-flex align-items-end justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-download"></i> Download Template
+                </button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+      <!-- Upload Section -->
+      <div class="card card-success card-outline mt-3">
+        <div class="card-header"><h3 class="card-title">Upload Results</h3></div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('results_blueprint.pupload_excel') }}" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+              <label>Select Excel File (.xlsx)</label>
+              <input type="file" name="file" class="form-control" accept=".xlsx" required>
+            </div>
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-upload"></i> Upload Results
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+
+<script>
+  $(function () {
+    $('.select2').select2();
+
+    // Show flash messages
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn().delay(3500).fadeOut();
+    }
+
+    let allStreams = [];
+
+    // Fetch stream data once
+    fetch('/streams_data')
+      .then(res => res.json())
+      .then(data => {
+        allStreams = data;
+      });
+
+    // Populate streams based on class
+    $('#classSelect').on('change', function () {
+      const classId = $(this).val();
+      const $container = $('#streamCheckboxContainer');
+      const $section = $('#streamSection');
+      $container.empty();
+      $section.hide();
+
+      if (!classId) return;
+
+      const filtered = allStreams.filter(s => s.class_id == classId);
+      if (filtered.length) {
+        filtered.forEach(stream => {
+          const id = `stream_${stream.stream_id}`;
+          $container.append(`
+            <div class="form-check">
+              <input type="radio" name="stream_id" value="${stream.stream_id}" id="${id}" class="form-check-input">
+              <label for="${id}" class="form-check-label">${stream.stream_name}</label>
+            </div>
+          `);
+        });
+        $section.show();
+      } else {
+        $container.html('<small class="text-muted">No streams available.</small>');
+        $section.show();
+      }
+    });
+
+    // Trigger stream load on page load
+    if ($('#classSelect').val()) {
+      $('#classSelect').trigger('change');
+    }
+  });
+</script>
+{% endblock %}

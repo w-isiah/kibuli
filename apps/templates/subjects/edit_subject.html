@@ -1,0 +1,192 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Subject{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- AdminLTE Theme -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+  <!-- Custom CSS for Flash Messages -->
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .alert i {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 
+              'check-circle' if category == 'success' 
+              else 'exclamation-circle' if category == 'warning' 
+              else 'times-circle' if category == 'danger' 
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Subject</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Subjects</a></li>
+            <li class="breadcrumb-item active">Edit Subject</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <!-- Default box -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Edit Subject</h3>
+
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="widget-content nopadding">
+                <form action="{{ url_for('subjects_blueprint.edit_subject', subject_id=subject.subject_id) }}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+                  <!-- CSRF Token for security -->
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                  <!-- Subject Code -->
+                  <div class="form-group row mb-3">
+                    <label for="subject_code" class="col-sm-2 col-form-label">Subject Code:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="subject_code" class="form-control" value="{{ subject.subject_code }}" placeholder="Enter Subject Code" required>
+                    </div>
+                  </div>
+
+                  <!-- Subject Name -->
+                  <div class="form-group row mb-3">
+                    <label for="subject_name" class="col-sm-2 col-form-label">Subject Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="subject_name" class="form-control" value="{{ subject.subject_name }}" placeholder="Enter Subject Name" required>
+                    </div>
+                  </div>
+
+                  <!-- Description -->
+                  <div class="form-group row mb-3">
+                    <label for="description" class="col-sm-2 col-form-label">Description:</label>
+                    <div class="col-sm-10">
+                      <textarea name="description" class="form-control" placeholder="Enter Subject Description">{{ subject.description }}</textarea>
+                    </div>
+                  </div>
+
+                  <!-- Grade Level -->
+                  <div class="form-group row mb-3">
+                    <label for="grade_level" class="col-sm-2 col-form-label">Grade Level:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="grade_level" class="form-control" value="{{ subject.grade_level }}" placeholder="Enter Grade Level">
+                    </div>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              Footer
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/assets/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/assets/js/demo.js"></script>
+<script src="/static/assets/js/mine.js"></script>
+<script>
+  $(document).ready(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+{% endblock javascripts %}

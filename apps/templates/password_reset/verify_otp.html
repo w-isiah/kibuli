@@ -1,0 +1,85 @@
+{% extends "layouts/base-fullscreen.html" %}
+
+{% block title %}Verify OTP{% endblock %}
+{% block body_class %}login-page{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Fonts -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- iCheck Bootstrap -->
+<link rel="stylesheet" href="/static/assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+<!-- AdminLTE Theme -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="login-box">
+
+  <!-- Logo -->
+  <div class="login-logo">
+    <img src="/static/uploads/id_image/logo.png" alt="Logo" class="mx-auto d-block" style="max-height:60px;">
+  </div>
+
+  <div class="card">
+    <div class="card-body login-card-body">
+
+      <p class="login-box-msg">
+        Enter the OTP sent to your {{ channel }}
+      </p>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- OTP Form -->
+      <form method="POST" action="{{ url_for('password_reset_blueprint.verify_otp', user_id=user_id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="input-group mb-3">
+          <input type="text" name="otp" class="form-control" placeholder="Enter OTP" required autofocus>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-key"></span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          <i class="fas fa-check mr-1"></i> Verify OTP
+        </button>
+      </form>
+
+      <!-- Links -->
+      <div class="mt-3 text-center">
+        <a href="{{ url_for('password_reset_blueprint.forgot_password') }}">
+          <i class="fas fa-arrow-left mr-1"></i> Request new OTP
+        </a>
+      </div>
+
+      <div class="mt-3 text-center text-muted">
+        &copy; 2025 shpsk
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap Bundle -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

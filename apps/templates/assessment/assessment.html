@@ -1,0 +1,147 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Assessment List{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+<style>
+  /* Floating Flash Messages */
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+    width: 350px;
+  }
+  .table-actions {
+    display: flex;
+    gap: 5px;
+  }
+  .card-title {
+    font-weight: 600;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0 text-dark"><i class="fas fa-clipboard-list mr-2"></i>Assessment Management</h1>
+        </div>
+        <div class="col-sm-6">
+          <div class="float-sm-right">
+            <a href="{{ url_for('assessment_blueprint.add_assessment') }}" class="btn btn-primary shadow-sm">
+              <i class="fas fa-plus mr-1"></i> Create New Assessment
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-outline card-primary">
+        <div class="card-header">
+          <h3 class="card-title">All Registered Assessments</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <table id="assessmentTable" class="table table-bordered table-striped responsive nowrap" style="width:100%">
+            <thead>
+              <tr>
+                <th style="width: 80px;">ID</th>
+                <th>Assessment Name</th>
+                <th>Description</th>
+                <th style="width: 150px;" class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in assessment %}
+              <tr>
+                <td class="align-middle"><code>#{{ a.assessment_id }}</code></td>
+                <td class="align-middle font-weight-bold">{{ a.assessment_name }}</td>
+                <td class="align-middle text-muted">
+                  {{ a.description if a.description else '<small class="text-italic text-light">No description provided</small>'|safe }}
+                </td>
+                <td class="align-middle text-center">
+                  <div class="btn-group">
+                    <a href="/edit_assessment/{{ a.assessment_id }}" class="btn btn-sm btn-info shadow-sm" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    
+                    {% if session['role'] == 'super_admin' %}
+                    <a href="/delete_assessment/{{ a.assessment_id }}" 
+                       class="btn btn-sm btn-danger shadow-sm ml-1" 
+                       title="Delete"
+                       onclick="return confirm('Strict Warning: Are you sure you want to delete [{{ a.assessment_name }}]? This may affect existing reports.')">
+                      <i class="fas fa-trash-alt"></i>
+                    </a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize DataTable
+    $('#assessmentTable').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+      "order": [[0, "desc"]], // Show newest IDs first
+      "language": {
+        "search": "Filter assessments:",
+        "emptyTable": "No assessments found in the database"
+      }
+    });
+
+    // Auto-dismiss flash messages after 5 seconds
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      setTimeout(function() {
+        $flash.fadeOut(1000, function() {
+          $(this).remove();
+        });
+      }, 5000);
+    }
+  });
+</script>
+{% endblock javascripts %}

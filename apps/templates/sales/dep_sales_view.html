@@ -1,0 +1,160 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <!-- Fonts & Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+  <!-- AdminLTE and Plugins CSS -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="/static/assets/css/mine.css">
+  <link rel="stylesheet" href="/static/assets/css/select2.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1>Stocked Out Items</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/dep_sales_view">Stock Out</a></li>
+            <li class="breadcrumb-item active">Stocked Out Items</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Form -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3 class="card-title">Filter by Date</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('sales_blueprint.sales_view') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="form-row">
+          <div class="col-md-5 mb-3">
+            <label for="start_date">Start Date</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+          </div>
+          <div class="col-md-5 mb-3">
+            <label for="end_date">End Date</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+          </div>
+          <div class="col-md-2 mb-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-search mr-1"></i> Search
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stocked Out Items Table -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-header">
+              <h3 class="card-title">Stocked Out Item List</h3>
+            </div>
+            <div class="card-body p-0">
+              <table id="salesTable" class="table table-striped table-bordered nowrap" style="width:100%">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Item Name</th>
+                    <th>Receiver Name</th>
+                    <th>User Name</th>
+                    <th>Quantity</th>
+                    <th>Date Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for sale in sales %}
+                  <tr>
+                    <td>{{ sale.product_name }}</td>
+                    <td>{{ sale.customer_name }}</td>
+                    <td>{{ sale.sold_by }}</td>
+                    <td>{{ sale.qty }}</td>
+                    <td>{{ sale.date_updated.strftime("%m-%d %H:%M") }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Export Button -->
+            <div class="card-footer text-right">
+              <button id="exportButton" class="btn btn-outline-info btn-sm" aria-label="Export to Excel">
+                <i class="fas fa-file-excel"></i> Export to Excel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <!-- Core Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.js"></script>
+
+  <!-- Plugins -->
+  <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="/static/assets/js/mine.js"></script>
+
+  <!-- DataTable Initialization and Export -->
+  <script>
+    $(document).ready(function () {
+      const table = $('#salesTable').DataTable({
+        fixedColumns: {
+          left: 1
+        },
+        paging: false,
+        scrollX: true,
+        scrollY: '300px',
+        scrollCollapse: true,
+        stateSave: true
+      });
+
+      $('#exportButton').on('click', function () {
+        try {
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.table_to_sheet(document.getElementById('salesTable'));
+          XLSX.utils.book_append_sheet(wb, ws, 'Stocked_Out_Items');
+          XLSX.writeFile(wb, 'stocked_out_items.xlsx');
+        } catch (error) {
+          alert('Error exporting to Excel: ' + error.message);
+        }
+      });
+    });
+  </script>
+{% endblock %}

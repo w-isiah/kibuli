@@ -1,0 +1,228 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<!-- Fonts & Icons -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+<!-- Theme & Plugins -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+<!-- Custom Styles -->
+<style>
+  /* Adjusting the container size */
+/* Container for multiple ID cards */
+.id-card-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* ID Card Styling */
+.id-card {
+  position: relative;
+  width: 480px;
+  height: 260px;
+  padding: 10px;
+  border: 2px solid #333;
+  border-radius: 12px;
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 12px 12px rgba(0, 0, 0, 0.6);
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Background image and overlay */
+.id-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
+    url('/static/uploads/id_image/bg.jpg') center/80% no-repeat;
+  background-size: 45%; /* Scale down the image */
+  z-index: -1;
+}
+
+
+/* Header Styling */
+.id-card h4 {
+  font-size: 14px;
+  font-weight: bold;
+  color: #0056b3;
+  text-align: center;
+  margin: 4px 0;
+}
+
+/* Info Section */
+.id-section p {
+  font-size: 12px;
+  margin: 2px 0;
+  text-align: center;
+}
+
+.id-section p strong {
+  color: #333;
+}
+
+/* Image Styling */
+.images {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10%;
+  object-fit: cover;
+  border: 2px solid #666;
+}
+
+/* QR Code Styling */
+.qr-code {
+  width: 40px;
+  margin-top: 8px;
+}
+
+/* Print Button */
+.print-button-container {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.print-button-container .btn {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+
+/* Print Styles */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .no-print { display: none !important; }
+
+  @page { size: portrait; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <h1>Student ID Card</h1>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="print-button-container no-print">
+      <button class="btn btn-primary" onclick="printIDCard()">
+        <i class="fas fa-print"></i> Print ID Card
+      </button>
+    </div>
+
+    <div id="print-area">
+      <div class="id-card-container">
+
+        <!-- Front Side -->
+        <div class="id-card">
+          <!-- Header -->
+          <div class="header">
+            <h4>SACRED HEART  </h4>
+            <h4>GIRLS</h4>
+            <h4>PRIMARY SCHOOL KYAMUSANSALA</h4>
+          </div>
+
+          <!-- Personal Details Section -->
+          <div class="id-section">
+            <p><strong>Student:</strong> {{ data.pupil_first_name }} {{ data.other_name }} {{ data.pupil_last_name }}</p>
+            <p><strong>Class:</strong> {{ data.class }}</p>
+            <p><strong>Reg. No:</strong> {{ data.reg_no }}</p>
+          </div>
+
+          <!-- Family Details Section -->
+          <div class="id-section">
+            <p><strong>Father:</strong> {{ data.father_first_name }} {{ data.father_last_name }}</p>
+            <p><strong>Mother:</strong> {{ data.mother_first_name }} {{ data.mother_last_name }}</p>
+          </div>
+
+          <!-- Images Section -->
+          <div class="images">
+            <img class="photo" src="/static/uploads/{{ data.pupil_image or 'default-avatar.png' }}" alt="Student Photo">
+            <img class="photo" src="/static/uploads/{{ data.father_image or 'default-avatar.png' }}" alt="Father Photo">
+            <img class="photo" src="/static/uploads/{{ data.mother_image or 'default-avatar.png' }}" alt="Mother Photo">
+          </div>
+
+        </div>
+
+        <!-- Back Side -->
+        <div class="id-card">
+          <!-- School Contact Information Section -->
+          <div class="id-section">
+            <p><strong>Location:</strong> Waka</p>
+            <p><strong>Contact:</strong> 759623689</p>
+            <p><strong>Email:</strong> info@school.com</p>
+            <p><strong>Address:</strong> P.O.BOX 63, Masaka</p>
+          </div>
+
+          <!-- QR Code and Signature Section -->
+          <div class="images">
+            <span>Authorization Signature</span>
+            <img class="photo" src="/static/uploads/{{ data.mother_sign or 'default-avatar.png' }}" alt="Mother Signature">
+            <img class="qr-code" src="/static/uploads/qr_{{ data.pupil_id }}.png" alt="QR Code">
+          </div>
+
+          <!-- Footer Message -->
+          <div class="id-section">
+            <p>If found, please return to the address above.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+
+<script>
+  function printIDCard() {
+    window.print();
+  }
+
+  $(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+{% endblock %}

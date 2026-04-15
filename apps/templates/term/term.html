@@ -1,0 +1,244 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Terms Management{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+{{ super() }}
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+
+<style>
+  .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+  }
+  .card-header .btn-light {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  .card-header .btn-light:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .badge {
+    font-size: 0.8em;
+    padding: 5px 10px;
+  }
+  .action-buttons .btn {
+    margin-right: 5px;
+  }
+  .table td, .table th {
+    vertical-align: middle;
+  }
+  .status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  .status-active { background-color: #28a745; }
+  .status-inactive { background-color: #6c757d; }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1 class="mb-0">
+            <i class="fas fa-calendar-alt mr-2"></i>Academic Terms
+          </h1>
+          <p class="text-muted mb-0 mt-1">Manage academic terms and their schedules</p>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index"><i class="fas fa-home"></i> Home</a></li>
+            <li class="breadcrumb-item active">Terms</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <h3 class="card-title mb-0">
+                  <i class="fas fa-table mr-2"></i>All Academic Terms
+                </h3>
+                <small class="text-light opacity-75">Manage term schedules and status</small>
+              </div>
+              <div>
+                <a href="/add_term" class="btn btn-light">
+                  <i class="fas fa-plus-circle mr-1"></i> Add New Term
+                </a>
+              </div>
+            </div>
+
+            <div class="card-body">
+              {% if terms %}
+              <div class="table-responsive">
+                <table id="termTable" class="table table-hover" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>Term Name</th>
+                      <th>Start Date</th>
+                      <th>End Date</th>
+                      <th>Academic Year</th>
+                      <th>Status</th>
+                      <th class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for term in terms %}
+                    <tr>
+                      <td>
+                        <strong>{{ term.term_name }}</strong>
+                        <br>
+                        <small class="text-muted">ID: {{ term.term_id }}</small>
+                      </td>
+                      <td>
+                        {% if term.start_on %}
+                          {% if term.start_on is string %}
+                            {{ term.start_on }}
+                          {% else %}
+                            {{ term.start_on.strftime('%d %b %Y') }}
+                          {% endif %}
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if term.ends_on %}
+                          {% if term.ends_on is string %}
+                            {{ term.ends_on }}
+                          {% else %}
+                            {{ term.ends_on.strftime('%d %b %Y') }}
+                          {% endif %}
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if term.year_name %}
+                          <span class="badge badge-info">{{ term.year_name }}</span>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if term.status == 'active' or term.status == 1 %}
+                          <span class="badge badge-success">
+                            <span class="status-indicator status-active"></span> Active
+                          </span>
+                        {% else %}
+                          <span class="badge badge-secondary">
+                            <span class="status-indicator status-inactive"></span> Inactive
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="text-center action-buttons">
+                        <a href="/edit_term/{{ term.term_id }}" 
+                           class="btn btn-sm btn-warning"
+                           title="Edit this term">
+                          <i class="fas fa-edit"></i> Edit
+                        </a>
+                        
+                        {% if session.get('role') == 'super_admin' %}
+                        <a href="/delete_term/{{ term.term_id }}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirmDelete('{{ term.term_name|e }}', {{ term.term_id }})"
+                           title="Delete this term">
+                          <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                        {% else %}
+                        <span class="text-muted" 
+                              title="Delete option restricted to Super Admin"
+                              data-toggle="tooltip">
+                          <i class="fas fa-lock"></i>
+                        </span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <h4>No Terms Found</h4>
+                <p class="text-muted">No academic terms have been created yet.</p>
+                <a href="/add_term" class="btn btn-primary mt-3">
+                  <i class="fas fa-plus-circle mr-1"></i> Create Your First Term
+                </a>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="card-footer text-muted">
+              <small>
+                <i class="fas fa-info-circle mr-1"></i> 
+                Showing {{ terms|length }} term{{ 's' if terms|length != 1 else '' }}
+                {% if session.get('role') != 'super_admin' %} - Delete option restricted to Super Admin{% endif %}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+{{ super() }}
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Initialize DataTable if terms exist
+    {% if terms %}
+    $('#termTable').DataTable({
+      paging: true,
+      pageLength: 10,
+      lengthChange: true,
+      searching: true,
+      ordering: true,
+      responsive: true,
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search terms...",
+        lengthMenu: "_MENU_ terms per page",
+        info: "Showing _START_ to _END_ of _TOTAL_ terms",
+        infoEmpty: "No terms to show",
+        infoFiltered: "(filtered from _MAX_ total terms)"
+      }
+    });
+    {% endif %}
+    
+    // Enhanced delete confirmation
+    window.confirmDelete = function(termName, termId) {
+      return confirm(`Are you sure you want to delete "${termName}"?\n\nTerm ID: ${termId}\nThis action cannot be undone and will be logged.`);
+    };
+  });
+</script>
+{% endblock javascripts %}

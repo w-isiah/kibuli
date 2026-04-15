@@ -1,0 +1,259 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add Teacher{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+    .alert {
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+      margin-bottom: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+    .alert .close {
+      margin-left: auto;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'warning' else 'times-circle' if category == 'danger' else 'info-circle' }}"></i>
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Add Teacher</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/teachers">Teachers</a></li>
+            <li class="breadcrumb-item active">Add Teacher</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Teacher Information</h3>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('teachers_blueprint.add_teacher') }}" method="POST" class="form-horizontal" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <!-- teacher_number -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Teacher Number:</label>
+              <div class="col-sm-10">
+                <input type="text" name="teacher_number" class="form-control" placeholder="Unique ID (e.g. TCH-001)" required>
+              </div>
+            </div>
+
+            <!-- first_name -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">First Name:</label>
+              <div class="col-sm-10">
+                <input type="text" name="first_name" class="form-control" required>
+              </div>
+            </div>
+
+            <!-- last_name -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Last Name:</label>
+              <div class="col-sm-10">
+                <input type="text" name="last_name" class="form-control" required>
+              </div>
+            </div>
+
+            <!-- other_name -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Other Name:</label>
+              <div class="col-sm-10">
+                <input type="text" name="other_name" class="form-control" placeholder="Middle name or additional name">
+              </div>
+            </div>
+
+            <!-- name_sf -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Name Short Form:</label>
+              <div class="col-sm-10">
+                <input type="text" name="name_sf" class="form-control" placeholder="e.g. J. Doe">
+              </div>
+            </div>
+
+            <!-- date_of_birth -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Date of Birth:</label>
+              <div class="col-sm-10">
+                <input type="date" name="date_of_birth" class="form-control" required>
+              </div>
+            </div>
+
+            <!-- gender -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Gender:</label>
+              <div class="col-sm-10">
+                <select name="gender" class="form-control" required>
+                  <option disabled selected>Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- subject_specialty -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Subject Specialty:</label>
+              <div class="col-sm-10">
+                <select name="subject_specialty" class="form-control select2" required>
+                  {% for subject in subjects %}
+                    <option value="{{ subject.subject_id }}">{{ subject.subject_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <!-- grade_level -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Grade Level:</label>
+              <div class="col-sm-10">
+                <input type="text" name="grade_level" class="form-control" placeholder="e.g. Grade 5, JSS1">
+              </div>
+            </div>
+
+            <!-- contact_number -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Contact Number:</label>
+              <div class="col-sm-10">
+                <input type="text" name="contact_number" class="form-control">
+              </div>
+            </div>
+
+            <!-- email -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Email:</label>
+              <div class="col-sm-10">
+                <input type="email" name="email" class="form-control" placeholder="e.g. example@domain.com">
+              </div>
+            </div>
+
+            <!-- hire_date -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Hire Date:</label>
+              <div class="col-sm-10">
+                <input type="date" name="hire_date" class="form-control">
+              </div>
+            </div>
+
+            <!-- address -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Address:</label>
+              <div class="col-sm-10">
+                <textarea name="address" class="form-control" rows="3" placeholder="Home address or postal info"></textarea>
+              </div>
+            </div>
+
+            <!-- status -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Status:</label>
+              <div class="col-sm-10">
+                <select name="status" class="form-control">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- image -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Profile Image:</label>
+              <div class="col-sm-10">
+                <input type="file" name="image" class="form-control" accept="image/*">
+              </div>
+            </div>
+
+            <!-- sign_image -->
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Signature Image:</label>
+              <div class="col-sm-10">
+                <input type="file" name="sign_image" class="form-control" accept="image/*">
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="form-group row">
+              <div class="col-sm-10 offset-sm-2">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Teacher</button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+        <div class="card-footer text-muted">
+          Ensure all required fields are filled correctly.
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <script src="/static/assets/js/select2.min.js"></script>
+  <script>
+    $(function () {
+      $('.select2').select2();
+      const $flash = $('#flashMessageContainer');
+      if ($flash.length) {
+        $flash.fadeIn(400).delay(3500).fadeOut(600);
+      }
+    });
+  </script>
+{% endblock %}

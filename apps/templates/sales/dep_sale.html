@@ -1,0 +1,227 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Sales{% endblock %}
+
+{% block body_class %}sidebar-mini layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Notification Banner -->
+  <section class="content-header">
+    <div id="notification" class="notification" style="display: none;">
+      <div class="notification-content">
+        <span id="notification-message"></span>
+        <button id="close-notification" class="close-btn">X</button>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Stock Out</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Deduct Stock</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+
+          <div class="card">
+            <div class="card-header d-flex justify-content-between">
+              <h3 class="card-title">Stock Out</h3>
+              <a href="/dep_sales_view" class="btn btn-sm btn-outline-primary">
+                View Stocked Out Items
+              </a>
+            </div>
+
+            <div class="card-body">
+              <div class="row">
+
+                <!-- Form Section -->
+                <div class="col-md-4">
+                  <form id="pos-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Receiver Dropdown -->
+                    <div class="form-group mb-3">
+                      <label for="customer-id">Receiver</label>
+                      <select id="customer-id" name="customer-id" class="form-control select2" required>
+                        <option value="" disabled selected>Select a Receiver</option>
+                        {% for customer in customers %}
+                          <option value="{{ customer.CustomerID }}">{{ customer.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    <!-- Product Dropdown -->
+                    <div class="form-group mb-3">
+                      <label for="product-id">Product</label>
+                      <select id="product-id" name="product-id" class="form-control select2" required>
+                        <option value="" disabled selected>Select Product</option>
+                        {% for product in products %}
+                          <option value="{{ product.ProductID }}" data-available="{{ product.quantity }}">
+                            {{ product.name }} | {{ product.category_name }} | Available: {{ product.quantity }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    <!-- Quantity Input -->
+                    <div class="form-group mb-3">
+                      <label for="product-qty">Quantity</label>
+                      <input id="product-qty" type="number" min="1" name="quantity" class="form-control" placeholder="Enter Quantity" required>
+                      <small id="available-qty-info" class="form-text text-muted">Available: 0</small>
+                    </div>
+
+                    <button type="button" id="add_item" class="btn btn-primary btn-sm">Add to Cart</button>
+                  </form>
+                </div>
+
+                <!-- Cart Section -->
+                <div class="col-md-8">
+                  <h4>Cart Summary</h4>
+                  <table class="table table-striped" id="cart-table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="item-list"></tbody>
+                  </table>
+
+                  <button type="button" id="checkout" class="btn btn-success btn-sm">Checkout</button>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="card-footer">Transaction Ready</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function () {
+  // Initialize Select2
+  $('.select2').select2({ placeholder: "Search...", allowClear: true });
+
+  // Update available stock info
+  $('#product-id').change(function () {
+    const available = $(this).find('option:selected').data('available');
+    $('#available-qty-info').text(`Available: ${available}`);
+    $('#product-qty').attr('max', available);
+  });
+
+  // Show notification
+  function showNotification(message) {
+    $('#notification-message').text(message);
+    $('#notification').fadeIn();
+    setTimeout(() => $('#notification').fadeOut(), 7000);
+  }
+
+  // Add item to cart
+  $('#add_item').click(function () {
+    const selected = $('#product-id option:selected');
+    const quantity = parseInt($('#product-qty').val(), 10);
+    const available = selected.data('available');
+    const productName = selected.text();
+    const productId = selected.val();
+
+    if (!productId) return showNotification("Please select a product.");
+    if (isNaN(quantity) || quantity < 1 || quantity > available) {
+      return showNotification(`Enter a quantity between 1 and ${available}.`);
+    }
+
+    const row = $('<tr></tr>').data('product-id', productId)
+      .append(`<td>${productName}</td>`)
+      .append(`<td><input type="number" class="form-control cart-qty" value="${quantity}" min="1" max="${available}" data-product-id="${productId}"></td>`)
+      .append('<td><button class="btn btn-sm btn-danger remove-item">Remove</button></td>');
+
+    $('#item-list').append(row);
+    $('#product-qty').val('');
+  });
+
+  // Validate quantity change in cart
+  $(document).on('change', '.cart-qty', function () {
+    const qty = parseInt($(this).val(), 10);
+    const max = parseInt($(this).attr('max'), 10);
+    if (qty < 1 || qty > max) {
+      showNotification(`Quantity must be between 1 and ${max}.`);
+      $(this).val(1);
+    }
+  });
+
+  // Remove item from cart
+  $(document).on('click', '.remove-item', function () {
+    $(this).closest('tr').remove();
+  });
+
+  // Checkout logic
+  $('#checkout').click(function () {
+    const customerID = $('#customer-id').val();
+    const cartItems = [];
+
+    $('#item-list tr').each(function () {
+      const productID = $(this).data('product-id');
+      const quantity = parseInt($(this).find('.cart-qty').val(), 10);
+      cartItems.push({ product_id: productID, quantity });
+    });
+
+    if (cartItems.length === 0) return showNotification("Cart is empty.");
+
+    $.ajax({
+      url: '/save_sale',
+      method: 'POST',
+      contentType: 'application/json',
+      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+      data: JSON.stringify({ customer_id: customerID, cart_items: cartItems }),
+      success: function (response) {
+        showNotification('Success: ' + response.message);
+        $('#pos-form')[0].reset();
+        $('#item-list').empty();
+        setTimeout(() => location.reload(), 1000);
+      },
+      error: function (xhr) {
+        const msg = xhr.responseJSON?.message || 'An error occurred';
+        showNotification('Error: ' + msg);
+      }
+    });
+  });
+
+  // Close notification
+  $('#close-notification').click(function () {
+    $('#notification').fadeOut();
+  });
+});
+</script>
+{% endblock %}

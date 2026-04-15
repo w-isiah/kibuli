@@ -1,0 +1,156 @@
+{% extends "layouts/base.html" %}
+{% block title %}Class Teacher Unassignment{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
+<link rel="stylesheet" href="/static/assets/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mt-3" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page heading -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <h1 class="m-0">Class Teacher Unassignment</h1>
+    </div>
+  </section>
+
+  <!-- Page content -->
+  <section class="content">
+    <div class="container-fluid">
+
+      <!-- Filters -->
+      <div class="card card-outline card-danger mb-4">
+        <div class="card-header">
+          <h3 class="card-title">Filter Assigned Class Teachers</h3>
+        </div>
+        <form method="GET">
+          <div class="card-body">
+            <div class="row">
+              {% set filter_fields = [
+                ('year_id', 'Study Year', study_years, 'year_id', 'year_name'),
+                ('stream_id', 'Stream', streams, 'stream_id', 'stream_name'),
+                ('user_id', 'Teacher', users, 'user_id', 'full_name'),
+                ('term_id', 'Term', terms, 'term_id', 'term_name')
+              ] %}
+              {% for field, label, items, value_key, text_key in filter_fields %}
+              <div class="form-group col-md-3">
+                <label>{{ label }}</label>
+                <select name="{{ field }}" class="form-control select2">
+                  <option value="">Select {{ label }}</option>
+                  {% for item in items %}
+                  <option value="{{ item[value_key] }}"
+                    {% if filters[field] == item[value_key]|string %}selected{% endif %}>
+                    {{ item[text_key] }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="card-footer text-right">
+            <button type="submit" class="btn btn-danger btn-sm">Filter</button>
+            <a href="{{ url_for('classteacher_assign_blueprint.classteacher_unassign') }}" class="btn btn-secondary btn-sm">Reset</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Assignment Table -->
+      <div class="card card-danger">
+        <div class="card-header">
+          <h5 class="card-title">Assigned Class Teachers (One Per Row)</h5>
+        </div>
+        <form method="POST" action="{{ url_for('classteacher_assign_blueprint.action_classteacher_unassign') }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table id="assignmentTable" class="table table-bordered table-hover nowrap" style="width:100%;">
+                <thead class="thead-dark">
+                  <tr>
+                    <th>Select</th>
+                    <th>Teacher</th>
+                    <th>Stream</th>
+                    <th>Study Year</th>
+                    <th>Term</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for assignment in class_teacher_assignments %}
+                  <tr>
+                    <td>
+                      <input type="checkbox" name="assignment_ids" value="{{ assignment.id }}">
+                    </td>
+                    <td>{{ assignment.full_name }}</td>
+                    <td>{{ assignment.stream_name }}</td>
+                    <td>{{ assignment.year_name }}</td>
+                    <td>{{ assignment.term_name }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card-footer text-right">
+            <button type="submit" class="btn btn-danger btn-sm">
+              <i class="fas fa-trash-alt"></i> Unassign Selected
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+
+<script>
+  $(function () {
+    $('.select2').select2({ width: '100%' });
+    $('#assignmentTable').DataTable({
+      responsive: true,
+      scrollX: true,
+      scrollY: '300px',
+      scrollCollapse: true,
+      paging: false,
+      fixedColumns: { left: 1, right: 1 },
+      stateSave: true
+    });
+
+    $('#flashMessageContainer').fadeIn(500).delay(3000).fadeOut(1000);
+  });
+</script>
+{% endblock %}

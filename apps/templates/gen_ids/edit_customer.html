@@ -1,0 +1,140 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Customer{% endblock %}
+
+<!-- Element injected into the BODY element -->
+{% block body_class %}sidebar-mini layout-footer-fixed{% endblock body_class %}
+
+<!-- Specific Page CSS -->
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Customer</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/customers">Customers</a></li>
+            <li class="breadcrumb-item active">Edit Customer</li>
+          </ol>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <!-- Default box -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Edit Customer Information</h3>
+            </div>
+            <div class="card-body">
+
+              <div class="widget-content nopadding">
+                <!-- Edit Customer Form -->
+                <form action="{{ url_for('customers_blueprint.edit_customer', customer_id=customer.CustomerID) }}" method="POST">
+                   <!-- CSRF Token for security -->
+                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                  <!-- Customer Name Input -->
+                  <div class="row mb-3">
+                    <label for="name" class="col-sm-2 col-form-label">Name:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="name" class="form-control" value="{{ customer.name }}" id="name" placeholder="Enter Customer Name" required>
+                    </div>
+                  </div>
+
+                  <!-- Contact Input -->
+                  <div class="row mb-3">
+                    <label for="contact" class="col-sm-2 col-form-label">Contact:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="contact" class="form-control" value="{{ customer.contact }}" id="contact" placeholder="Enter Contact" required>
+                    </div>
+                  </div>
+
+                  <!-- Address Input -->
+                  <div class="row mb-3">
+                    <label for="address" class="col-sm-2 col-form-label">Address:</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="address" class="form-control" value="{{ customer.address }}" id="address" placeholder="Enter Address" required>
+                    </div>
+                  </div>
+
+                  <!-- Loyalty Points Input -->
+                  <div class="row mb-3">
+                    <label for="loyaltypoints" class="col-sm-2 col-form-label">Loyalty Points:</label>
+                    <div class="col-sm-10">
+                      <input type="number" name="loyaltypoints" class="form-control" value="{{ customer.loyaltypoints }}" id="loyaltypoints" placeholder="Enter Loyalty Points">
+                    </div>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-sm btn-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                      Save Changes
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+
+            </div>
+            <!-- /.card-body -->
+            <div class="card-footer">
+              Footer
+            </div>
+            <!-- /.card-footer-->
+          </div>
+          <!-- /.card -->
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS -->
+{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/assets/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/assets/js/demo.js"></script>
+{% endblock javascripts %}

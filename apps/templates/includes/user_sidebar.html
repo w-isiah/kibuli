@@ -1,0 +1,85 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+
+  <!-- Brand Logo -->
+  <a href="{{ url_for('home_blueprint.index') }}" class="brand-link">
+    <img src="/static/uploads/id_image/logo2.png"
+         alt="School Logo"
+         class="brand-image img-circle elevation-3"
+         style="opacity: .8">
+    <span class="brand-text font-weight-light"> STOCKVEL </span>
+  </a>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+
+    <!-- User Panel -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+      <div class="image">
+        <img src="/static/uploads/{{ session['profile_image'] }}"
+             class="img-circle elevation-2"
+             alt="User Image">
+      </div>
+      <div class="info">
+        <a href="/logout" class="d-block">
+          <i class="fas fa-sign-out-alt mr-1"></i>{{ session['first_name'] }} - Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- SidebarSearch Form -->
+    <div class="form-inline">
+      <div class="input-group" data-widget="sidebar-search">
+        <input class="form-control form-control-sidebar"
+               type="search"
+               placeholder="Search"
+               aria-label="Search">
+        <div class="input-group-append">
+          <button class="btn btn-sidebar">
+            <i class="fas fa-search fa-fw"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <nav class="mt-2">
+      <ul class="nav nav-pills nav-sidebar flex-column"
+          data-widget="treeview"
+          role="menu"
+          data-accordion="false">
+
+        <!-- Dashboard Menu -->
+        <li class="nav-item {% if 'index' in segment %}menu-open{% endif %}">
+          <a href="/index"
+             class="nav-link {% if 'index' in segment %}active{% endif %}">
+            <i class="nav-icon fas fa-home"></i>
+            <p>
+              Dashboard
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="/index"
+                 class="nav-link {% if 'index' in segment %}active{% endif %}">
+                <i class="fas fa-circle-notch nav-icon"></i>
+                <p>Home</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Add more sections below as needed -->
+    
+
+        <!-- Add more menu items below -->
+
+      </ul>
+    </nav>
+    <!-- /.sidebar-menu -->
+
+  </div>
+  <!-- /.sidebar -->
+
+</aside>

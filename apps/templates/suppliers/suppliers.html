@@ -1,0 +1,172 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Suppliers & Donors{% endblock %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="/static/assets/css/mine.css">
+  <link rel="stylesheet" href="/static/assets/css/select2.min.css">
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
+
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: 80%;
+      display: none;
+    }
+    .alert {
+      opacity: 1;
+      transition: opacity 1s ease-out;
+      margin-bottom: 10px;
+    }
+    .alert.alert-dismissible {
+      padding-right: 30px;
+    }
+  </style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Suppliers & Donors</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/suppliers">Suppliers & Donors</a></li>
+            <li class="breadcrumb-item active">Supplier List</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title mb-0">Supplier & Donor List</h3>
+              <div class="btn-group ms-auto" role="group">
+                <a href="/add_supplier" class="btn btn-primary btn-sm">Add a Supplier</a>
+                <a href="/inventory_index" class="btn btn-success btn-sm">Inventory Dashboard</a>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="table-responsive">
+                <table id="suppliersTable" class="display nowrap stripe" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Contact Details</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for supplier in suppliers %}
+                      <tr>
+                        <td>{{ supplier.Name }}</td>
+                        <td>{{ supplier.Type or 'N/A' }}</td>
+                        <td>{{ supplier.ContactDetails or 'N/A' }}</td>
+                        <td>
+                          <a href="/edit_supplier/{{ supplier.SupplierID }}" class="btn btn-sm btn-warning">
+                            Edit
+                          </a>
+                        </td>
+                        <td>
+                          {% if session['role'] == 'admin' %}
+                            <a href="/delete_supplier/{{ supplier.SupplierID }}"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Are you sure you want to delete {{ supplier.Name }}? This is permanent and may fail if assets are linked.')">
+                              Delete
+                            </a>
+                          {% else %}
+                            <span>-</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.js"></script>
+
+  <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script src="/static/assets/js/mine.js"></script>
+  <script src="/static/assets/js/select2.min.js"></script>
+
+  <script>
+    $(document).ready(function() {
+      // Initialize DataTable
+      $('#suppliersTable').DataTable({
+        fixedColumns: { left: 1,},
+        paging: false,
+        scrollX: true,
+        scrollY: '300px',
+        scrollCollapse: true,
+        stateSave: true
+      });
+
+      // Flash message effect
+      if ($('#flashMessageContainer').length) {
+        $('#flashMessageContainer').fadeIn(500).delay(3000).fadeOut(1000);
+      }
+    });
+  </script>
+

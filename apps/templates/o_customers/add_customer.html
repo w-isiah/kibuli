@@ -1,0 +1,102 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Add Receiver{% endblock %}
+
+{% block body_class %}sidebar-mini layout-footer-fixed{% endblock %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- AdminLTE -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1><i class="fas fa-user-plus"></i> Add a Receiver</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/customers">Receivers</a></li>
+            <li class="breadcrumb-item active">Add Receiver</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container" id="flashMessageContainer">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'times-circle' if category == 'danger' else 'info-circle' }}"></i>
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title">Receiver Information</h3>
+          <a href="/customers" class="btn btn-primary btn-sm">
+            <i class="fas fa-list"></i> Receivers List
+          </a>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('customers_blueprint.add_customer') }}" method="POST" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+              <label for="customer_name">Receiver Name:</label>
+              <input type="text" id="customer_name" name="customer_name" class="form-control" placeholder="Enter Name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="contact">Contact:</label>
+              <input type="tel" id="contact" name="contact" class="form-control" placeholder="Enter contact number" pattern="\d{10}" title="Please enter a valid 10-digit phone number" >
+              <small class="form-text text-muted">Only numeric values are allowed, and the phone number should be 10 digits long.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="address">Address:</label>
+              <input type="text" id="address" name="address" class="form-control" placeholder="Enter customer address">
+            </div>
+
+            <div class="form-group text-center">
+              <button type="submit" class="btn btn-success">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script>
+  $(document).ready(function() {
+    if ($('#flashMessageContainer').length) {
+      $('#flashMessageContainer').fadeIn(500).delay(5000).fadeOut(1000);
+    }
+  });
+</script>
+{% endblock %}

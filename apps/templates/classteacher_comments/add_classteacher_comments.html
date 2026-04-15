@@ -1,0 +1,137 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add Class Teacher Comment{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 80%;">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{
+              'check-circle' if category == 'success'
+              else 'exclamation-circle' if category == 'warning'
+              else 'times-circle' if category == 'danger'
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-sm-6">
+          <h1>Add Class Teacher Comment</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('classteacher_comments_blueprint.classteacher_comments') }}">Class Teacher Comments</a></li>
+            <li class="breadcrumb-item active">Add</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">New Comment</h3>
+            </div>
+
+            <form action="{{ url_for('classteacher_comments_blueprint.add_classteacher_comments') }}" method="POST" class="form-horizontal">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+              <div class="card-body">
+
+                <!-- Stream -->
+                <div class="form-group row">
+                  <label for="stream_id" class="col-sm-3 col-form-label">Stream:</label>
+                  <div class="col-sm-9">
+                    <select name="stream_id" id="stream_id" class="form-control" required>
+                      <option value="" disabled selected>Select Stream</option>
+                      {% for stream in streams %}
+                        <option value="{{ stream.stream_id }}">{{ stream.stream_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Min Score -->
+                <div class="form-group row">
+                  <label for="min_score" class="col-sm-3 col-form-label">Minimum Score:</label>
+                  <div class="col-sm-9">
+                    <input type="number" name="min_score" step="0.01" class="form-control" id="min_score" placeholder="e.g. 50.00" required>
+                  </div>
+                </div>
+
+                <!-- Max Score -->
+                <div class="form-group row">
+                  <label for="max_score" class="col-sm-3 col-form-label">Maximum Score:</label>
+                  <div class="col-sm-9">
+                    <input type="number" name="max_score" step="0.01" class="form-control" id="max_score" placeholder="e.g. 59.99" required>
+                  </div>
+                </div>
+
+                <!-- Comment -->
+                <div class="form-group row">
+                  <label for="comment" class="col-sm-3 col-form-label">Comment:</label>
+                  <div class="col-sm-9">
+                    <textarea name="comment" id="comment" rows="4" class="form-control" placeholder="Enter your comment here..." required></textarea>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="card-footer text-right">
+                <button type="submit" class="btn btn-success">
+                  <i class="fas fa-save mr-1"></i> Save Comment
+                </button>
+              </div>
+            </form>
+
+            <div class="card-footer">
+              <small class="text-muted">Your comment will be saved under your account and used within the defined score range.</small>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script>
+  $(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3000).fadeOut(600);
+    }
+  });
+</script>
+{% endblock javascripts %}

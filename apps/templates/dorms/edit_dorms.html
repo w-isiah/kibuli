@@ -1,0 +1,175 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Edit Dormitory {% endblock %}
+
+{% block body_class %} sidebar-mini {% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    max-width: 600px;
+    display: none;
+  }
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+</style>
+
+
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{
+              'check-circle' if category == 'success'
+              else 'exclamation-circle' if category == 'warning'
+              else 'times-circle' if category == 'danger'
+              else 'info-circle' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Dormitory: {{ dorm.name }}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/dorms">Dormitories</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Update Dormitory Details</h3>
+            </div>
+            <div class="card-body">
+              <form action="{{ url_for('dorms_blueprint.edit_dorms', dorm_id=dorm.dormitory_id ) }}" method="POST">
+                {% if csrf_token %}<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">{% endif %}
+                <input type="hidden" name="id" value="{{ dorm.dormitory_id }}">
+
+                <div class="row mb-3">
+                  <label for="name" class="col-sm-3 col-form-label">Name:</label>
+                  <div class="col-sm-9">
+                    <input type="text" name="name" class="form-control" id="name" value="{{ dorm.name }}" placeholder="Dormitory Name" required>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <label for="gender" class="col-sm-3 col-form-label">Gender:</label>
+                  <div class="col-sm-9">
+                    <select name="gender" id="gender" class="form-control" required>
+                      <option value="">Select Gender</option>
+                      <option value="Male" {{ 'selected' if dorm.gender == 'Male' else '' }}>Male</option>
+                      <option value="Female" {{ 'selected' if dorm.gender == 'Female' else '' }}>Female</option>
+                      <option value="Mixed" {{ 'selected' if dorm.gender == 'Mixed' else '' }}>Mixed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <label for="capacity" class="col-sm-3 col-form-label">Capacity:</label>
+                  <div class="col-sm-9">
+                    <input type="number" name="capacity" class="form-control" id="capacity" value="{{ dorm.capacity or '' }}" placeholder="Enter Capacity" required>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <label for="dorm_master_id" class="col-sm-3 col-form-label">Dorm Matron/Master:</label>
+                  <div class="col-sm-9">
+                    <select name="dorm_master_id" id="dorm_master_id" class="form-control">
+                      <option value="" {% if not dorm.dorm_master_id %}selected{% endif %}>No Dorm Master Assigned (Optional)</option>
+                      {% for teacher in teachers %}
+                        <option value="{{ teacher.teacher_id }}" {% if dorm.dorm_master_id == teacher.teacher_id %}selected{% endif %}>
+                          {{ teacher.first_name }} {{ teacher.last_name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <label for="room_id" class="col-sm-3 col-form-label">Room (Primary):</label>
+                  <div class="col-sm-9">
+                    <select name="room_id" id="room_id" class="form-control">
+                      <option value="" {% if not dorm.room_id %}selected{% endif %}>No Room Assigned (Optional)</option>
+                      {% for room in rooms %}
+                        <option value="{{ room.room_id }}" {% if dorm.room_id == room.room_id %}selected{% endif %}>
+                          {{ room.room_name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <label for="description" class="col-sm-3 col-form-label">Description:</label>
+                  <div class="col-sm-9">
+                    <textarea name="description" class="form-control" rows="3" placeholder="Short description...">{{ dorm.description or '' }}</textarea>
+                  </div>
+                </div>
+
+                <div class="form-actions text-center mt-4">
+                  <button type="submit" class="btn btn-lg btn-success">
+                        <i class="fas fa-save mr-1"></i> Save Changes
+                  </button>
+                </div>
+              </form>
+            </div> <div class="card-footer text-muted small">Dormitory ID: {{ dorm.dormitory_id }}</div>
+          </div> </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    const $flash = $('#flashMessageContainer');
+    if ($flash.length) {
+      $flash.fadeIn(400).delay(3500).fadeOut(600);
+    }
+  });
+</script>
+{% endblock javascripts %}

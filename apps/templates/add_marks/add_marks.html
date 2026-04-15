@@ -1,0 +1,213 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Assessment Marks Entry{% endblock %}
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block stylesheets %}
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+<link href="/static/assets/css/adminlte.min.css" rel="stylesheet" />
+<link href="/static/assets/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css" rel="stylesheet" />
+<style>
+    /* Keeps the table header visible while scrolling */
+    .table-responsive { max-height: 65vh; overflow-y: auto; }
+    thead th { position: sticky; top: 0; background-color: #f4f6f9; z-index: 10; border-bottom: 2px solid #dee2e6 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6"><h1><i class="fas fa-edit mr-2"></i>Assessment Marks</h1></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item active">Marks Entry</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+
+   <div class="card card-primary card-outline">
+        <div class="card-header"><h3 class="card-title"><i class="fas fa-filter"></i> Selection Filters</h3></div>
+        <div class="card-body">
+          <form method="GET" action="{{ url_for('add_marks_blueprint.add_marks') }}">
+            <div class="row">
+              <div class="form-group col-md-2">
+                <label>Class</label>
+                <select name="class_id" class="form-control select2">
+                  <option value="">-- All --</option>
+                  {% for c in class_list %}
+                  <option value="{{ c.class_id }}" {% if c.class_id == class_id %}selected{% endif %}>{{ c.class_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Stream</label>
+                <select name="stream_id" class="form-control select2">
+                  <option value="">-- All --</option>
+                  {% for st in streams %}
+                  <option value="{{ st.stream_id }}" {% if st.stream_id == stream_id %}selected{% endif %}>{{ st.stream_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Year <span class="text-danger">*</span></label>
+                <select name="year_id" class="form-control select2" required>
+                  <option value="">-- Select --</option>
+                  {% for y in study_years %}
+                  <option value="{{ y.year_id }}" {% if y.year_id == year_id %}selected{% endif %}>{{ y.year_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Term <span class="text-danger">*</span></label>
+                <select name="term_id" class="form-control select2" required>
+                  <option value="">-- Select --</option>
+                  {% for t in terms %}
+                  <option value="{{ t.term_id }}" {% if t.term_id == term_id %}selected{% endif %}>{{ t.term_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-4">
+                <label>Subject <span class="text-danger">*</span></label>
+                <select name="subject_id" class="form-control select2" required>
+                  <option value="">-- Select Subject --</option>
+                  {% for s in subjects %}
+                  <option value="{{ s.subject_id }}" {% if s.subject_id == subject_id %}selected{% endif %}>{{ s.subject_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group col-md-4">
+                <label>Assessment Type <span class="text-danger">*</span></label>
+                <select name="assessment_name" class="form-control select2" required>
+                  <option value="">-- Select Assessment --</option>
+                  {% for a in assessments %}
+                  <option value="{{ a.assessment_name }}" {% if a.assessment_name == assessment_name %}selected{% endif %}>{{ a.assessment_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group col-md-4">
+                <label>Reg No (Optional)</label>
+                <input type="text" name="reg_no" class="form-control" value="{{ reg_no or '' }}" placeholder="Search by Reg No">
+              </div>
+
+              <div class="col-md-4 text-right" style="padding-top: 30px;">
+                <button type="submit" class="btn btn-primary btn-block shadow-sm">
+                    <i class="fas fa-search mr-1"></i> Load Student List
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      </div>
+
+      {% if add_marks %}
+      <form method="POST" action="{{ url_for('add_marks_blueprint.action_add_marks') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="card card-success card-outline">
+          <div class="card-header">
+            <h3 class="card-title">Marks List: <b>{{ assessment_name }}</b></h3>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th style="width: 200px; padding-left: 15px;">Student Name</th>
+                    <th style="width: 120px;">Reg No</th>
+                    <th style="width: 100px;">Stream</th>
+                    <th style="width: 100px;">Mark (100)</th>
+                    <th>Teacher's Notes</th>
+                    <th style="width: 100px;" class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for report in add_marks %}
+                  <tr>
+                    <td class="align-middle" style="padding-left: 15px;">{{ report.full_name }}</td>
+                    <td class="align-middle"><code>{{ report.reg_no }}</code></td>
+                    <td class="align-middle">{{ report.stream_name }}</td>
+                    <td>
+                      <input type="hidden" name="pupil_ids" value="{{ report.pupil_id }}">
+                      <input type="hidden" name="reg_no[{{ report.pupil_id }}]" value="{{ report.reg_no }}">
+                      <input type="hidden" name="class_id[{{ report.pupil_id }}]" value="{{ report.class_id }}">
+                      <input type="hidden" name="stream_id[{{ report.pupil_id }}]" value="{{ report.stream_id }}">
+                      <input type="hidden" name="term_id[{{ report.pupil_id }}]" value="{{ report.term_id }}">
+                      <input type="hidden" name="year_id[{{ report.pupil_id }}]" value="{{ report.year_id }}">
+                      <input type="hidden" name="assessment_id[{{ report.pupil_id }}]" value="{{ report.assessment_id }}">
+                      <input type="hidden" name="subject_id[{{ report.pupil_id }}]" value="{{ report.subject_id }}">
+
+                      <input type="number" name="add_marks[{{ report.pupil_id }}]" 
+                             value="{{ report.existing_mark if report.existing_mark is not none else '' }}"
+                             min="0" max="100" step="0.5" class="form-control form-control-sm border-primary">
+                    </td>
+                    <td>
+                      <input type="text" name="add_remarks[{{ report.pupil_id }}]" 
+                             value="{{ report.existing_remark or '' }}"
+                             class="form-control form-control-sm" placeholder="Observation...">
+                    </td>
+                    <td class="text-center">
+                      <button type="submit" name="submit_add" value="{{ report.pupil_id }}" 
+                              class="btn btn-xs btn-success" onclick="return confirm('Save mark for {{ report.full_name }}?')">
+                        <i class="fas fa-save"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card-footer bg-white text-right">
+            <button type="submit" class="btn btn-success shadow-sm" onclick="return confirm('Update all marks in this list?')">
+              <i class="fas fa-check-double mr-1"></i> Save All Visible Marks
+            </button>
+          </div>
+        </div>
+      </form>
+      {% elif year_id %}
+      <div class="alert alert-info">No students found matching the selected criteria.</div>
+      {% endif %}
+
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.js"></script>
+<script src="/static/assets/js/select2.min.js"></script>
+
+<script>
+  $(function () {
+    // Initialize Select2 with Bootstrap 4 theme
+    $('.select2').select2({ theme: 'bootstrap4' });
+
+    // Auto-dismiss alerts
+    setTimeout(function() {
+      $('.alert').fadeOut('slow');
+    }, 4000);
+  });
+</script>
+{% endblock %}

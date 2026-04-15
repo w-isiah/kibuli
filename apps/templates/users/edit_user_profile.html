@@ -1,0 +1,163 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block title %} Edit User {% endblock %}
+
+{% block body_class %} admin_sidebar-mini {% endblock body_class %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/mine.css">
+<style>
+  .form-group { margin-bottom: 1.5rem; }
+  .select2-container--default .select2-selection--single { border-radius: 8px; }
+  .form-control { border-radius: 8px; }
+  .btn-primary { width: 100%; font-size: 1.1rem; }
+  .form-text { font-size: 0.85rem; color: #6c757d; }
+  .alert-container .alert { border-radius: 8px; }
+  .file-upload-btn { padding: 0.5rem 1.25rem; border-radius: 8px; background-color: #17a2b8; color: white; }
+  .file-upload-btn:hover { background-color: #138496; }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-12">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit User</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li class="breadcrumb-item active">Edit User</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">User Information</h3>
+        </div>
+
+        <div class="card-body">
+          <form action="{{ url_for('auth.edit_user_profile', id=user.id) }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="row">
+              <div class="col-md-6 form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control form-control-lg" id="username" value="{{ user.username }}" name="username" required>
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" class="form-control form-control-lg" id="first_name" value="{{ user.first_name }}" name="first_name" required>
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" class="form-control form-control-lg" id="last_name" value="{{ user.last_name }}" name="last_name" required>
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="other_name">Other Name</label>
+                <input type="text" class="form-control form-control-lg" id="other_name" value="{{ user.other_name }}" name="other_name">
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="password">Password (Leave blank to keep current)</label>
+                <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Enter a new password">
+              </div>
+
+              <!-- Show password toggle -->
+              <div class="col-md-6 form-group">
+                <input type="checkbox" id="show_password"> Show Password
+              </div>
+
+              <!-- Role is displayed but not editable -->
+              <div class="col-md-6 form-group">
+                <label for="role">Role</label>
+                <select class="form-control form-control-lg select2" disabled name="role" id="role" style="width: 100%;" required>
+                  <option value="School Practice Supervisor" {% if user.role == 'School Practice Supervisor' %}selected{% endif %}>School Practice Supervisor</option>
+                  <option value="Head of Department" {% if user.role == 'Head of Department' %}selected{% endif %}>Head of Department</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 form-group">
+                <label for="profile_image">Profile Image</label>
+                <input type="file" class="form-control-file" id="profile_image" name="profile_image" accept="image/*">
+                <small class="form-text">Upload a profile image (optional).</small>
+                {% if user.profile_image %}
+                <img src="{{ url_for('static', filename='uploads/imgs/' + user.profile_image) }}" alt="Profile Image" class="img-thumbnail mt-2" width="150">
+                {% else %}
+                <p>No profile image available</p>
+                {% endif %}
+              </div>
+
+              <div class="col-md-12 text-center mt-4">
+                <button type="submit" class="btn btn-primary btn-sm px-4">Save Changes</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/plugins/select2/js/select2.full.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/js/mine.js"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize select2 for role (disabled, but initializing in case of future changes)
+    $('#role').select2();
+
+    // Toggle password visibility
+    $('#show_password').on('change', function() {
+      if ($(this).prop('checked')) {
+        $('#password').attr('type', 'text');
+      } else {
+        $('#password').attr('type', 'password');
+      }
+    });
+  });
+</script>
+{% endblock javascripts %}

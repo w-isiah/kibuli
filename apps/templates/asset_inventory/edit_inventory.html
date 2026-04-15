@@ -1,0 +1,175 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Edit Inventory Record {% endblock %}
+
+{% block body_class %} sidebar-mini layout-footer-fixed {% endblock body_class %}
+
+{% block stylesheets %}
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<style>
+  .alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 80%;
+    display: none;
+  }
+
+  .alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    margin-bottom: 10px;
+  }
+
+  .alert.alert-dismissible {
+    padding-right: 30px;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" id="flashMessageContainer">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content Header -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Edit Inventory Record</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/index">Home</a></li>
+            <li class="breadcrumb-item"><a href="/inventory_index">Inventory</a></li>
+            <li class="breadcrumb-item active">Edit Inventory</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <!-- Header -->
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title mb-0">Edit Inventory Record</h3>
+              <div class="btn-group ms-auto" role="group">
+                <a href="/inventory_index" class="btn btn-primary btn-sm">Back to Inventory</a>
+                <a href="/add_inventory" class="btn btn-success btn-sm">Add New Record</a>
+              </div>
+            </div>
+
+            <!-- Body -->
+            <form action="{{ url_for('asset_inventory_blueprint.edit_inventory', inventory_id=inventory.InventoryID) }}" method="POST">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="id" value="{{ inventory.InventoryID }}">
+
+              <div class="card-body">
+                <!-- Asset Selection -->
+                <div class="form-group">
+                  <label for="asset_id">Asset:</label>
+                  <select class="form-control form-control-sm" name="asset_id" id="asset_id" required>
+                    <option value="">Select Asset</option>
+                    {% for asset in assets %}
+                      <option value="{{ asset.AssetID }}" {% if asset.AssetID == inventory.AssetID %}selected{% endif %}>
+                        {{ asset.IdentificationNumber }} - {{ asset.AssetDescription }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- Location Selection -->
+                <div class="form-group">
+                  <label for="location_id">Location:</label>
+                  <select class="form-control form-control-sm" name="location_id" id="location_id" required>
+                    <option value="">Select Location</option>
+                    {% for location in locations %}
+                      <option value="{{ location.LocationID }}" {% if location.LocationID == inventory.LocationID %}selected{% endif %}>
+                        {{ location.LocationName }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- Quantities -->
+                <div class="form-group">
+                  <label for="recorded_qty">Recorded Quantity:</label>
+                  <input type="number" class="form-control form-control-sm" name="recorded_qty"
+                         id="recorded_qty" value="{{ inventory.RecordedQuantity }}" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="verified_qty">Verified Quantity:</label>
+                  <input type="number" class="form-control form-control-sm" name="verified_qty"
+                         id="verified_qty" value="{{ inventory.VerifiedQuantity or '' }}">
+                </div>
+
+                <!-- Condition -->
+                <div class="form-group">
+                  <label for="condition">Asset Condition:</label>
+                  <select class="form-control form-control-sm" name="condition" id="condition">
+                    <option value="Good" {% if inventory.AssetCondition == 'Good' %}selected{% endif %}>Good</option>
+                    <option value="Fair" {% if inventory.AssetCondition == 'Fair' %}selected{% endif %}>Fair</option>
+                    <option value="Poor" {% if inventory.AssetCondition == 'Poor' %}selected{% endif %}>Poor</option>
+                  </select>
+                </div>
+
+                <!-- Remarks -->
+                <div class="form-group">
+                  <label for="remarks">Remarks:</label>
+                  <textarea class="form-control form-control-sm" name="remarks" id="remarks" rows="2">{{ inventory.Remarks }}</textarea>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="card-footer text-right">
+                <button type="submit" class="btn btn-sm btn-success">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+<script>
+  $(document).ready(function() {
+    if ($('#flashMessageContainer').length) {
+      $('#flashMessageContainer').fadeIn(500).delay(3000).fadeOut(1000);
+    }
+  });
+</script>
+{% endblock javascripts %}
