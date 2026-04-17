@@ -67,16 +67,7 @@ def format_date(date_data, format_string='%Y-%m-%d'):
 def register_blueprints(app):
     """Register all blueprints dynamically from the apps module."""
     modules = [
-        'authentication', 'home', 'pupils', 'classes', 'fathers', 'mothers',
-        'guardians', 'subjects', 'teachers', 'gen_ids', 'study_years',
-        'results', 'reports', 'grades', 'dorms', 'register', 'promote',
-        'streams', 'rooms', 'stream_assign', 'categories', 'products',
-        'p_restock', 'dorm_reg', 'sub_categories', 'sales', 'customers',
-        'other_products', 'department_h_products', 'dep_restock', 'division',
-        'subject_assign', 'results_update', 'add_marks','assessment','term',
-        'classteacher_assign','grade_analysis','eot_reports','past_reports',
-        'subject_comments','headmaster_comments','classteacher_comments',
-        'admissions','locations','suppliers','fixed_assets','asset_inventory','password_reset','finance','report_1'
+        'authentication','home','password_reset','affiliations'
     ]
 
     for module_name in modules:

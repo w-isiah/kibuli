@@ -1,240 +1,188 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Users{% endblock %}
+{% block title %} User Management {% endblock %}
 {% block body_class %}sidebar-mini layout-fixed{% endblock %}
 
 {% block stylesheets %}
-<!-- Google Fonts & AdminLTE CSS -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
-<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
+  
+  <style>
+    .card-church { border-top: 3px solid #6f42c1; }
+    .table-middle td { vertical-align: middle !important; }
+    
+    /* Avatar & Signature Styling */
+    .img-wrapper { position: relative; display: inline-block; }
+    .user-avatar {
+      width: 38px; height: 38px; object-fit: cover;
+      border-radius: 50%; border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;
+    }
+    .user-sign-thumb {
+      width: 50px; height: 24px; object-fit: contain;
+      background: #fdfdfd; border: 1px solid #eee;
+      border-radius: 4px; transition: 0.2s;
+    }
+    .user-avatar:hover, .user-sign-thumb:hover { 
+      transform: scale(1.15); z-index: 10; cursor: zoom-in; border-color: #6f42c1; 
+    }
 
-<!-- Plugins -->
-<link rel="stylesheet" href="/static/assets/css/select2.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css">
-<link rel="stylesheet" href="/static/assets/css/mine.css">
-
-<style>
-  .alert-container {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1050;
-    width: 80%;
-  }
-</style>
+    /* Status Badges */
+    .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .dot-online { background-color: #28a745; box-shadow: 0 0 5px #28a745; }
+    .dot-offline { background-color: #dc3545; }
+    
+    .role-badge { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
 {% endblock %}
 
 {% block content %}
 <div class="content-wrapper">
-  <!-- Flash Messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="alert-container">
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            <strong>{{ message }}</strong>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <!-- Page Header -->
-  <section class="content-header">
+  <div class="content-header">
     <div class="container-fluid">
-      <div class="row mb-2 align-items-center">
+      <div class="row mb-2">
         <div class="col-sm-6">
-          <h1><i class="fas fa-users"></i> Users</h1>
+          <h1 class="m-0 text-dark"><i class="fas fa-user-shield mr-2 text-muted"></i>Account Directory</h1>
         </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="/index">Home</a></li>
-            <li class="breadcrumb-item active">Users</li>
-          </ol>
+        <div class="col-sm-6 text-right">
+          <a href="/add_user" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus-circle mr-1"></i> Create New Account
+          </a>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- User Table Section -->
   <section class="content">
     <div class="container-fluid">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mb-0">User List</h3>
-          <a href="/add_user" class="btn btn-sm btn-primary">
-            <i class="fas fa-plus-circle"></i> Add a User
-          </a>
-        </div>
-
-        <div class="card-body">
-          <table id="accounts" class="stripe row-border order-column" style="width:100%">
-            <thead class="thead-dark">
-              <tr>
-                <th>Profile Image</th>
-                <th>Signature Image</th>
-                <th>Username</th>
-                <th>Name SF</th>
-                <th>Full Name</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Section Roles</th>
-                <th>Department Roles</th>
-                <th>Activity Logs</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for user in users %}
-              <tr>
-                <!-- Profile Image -->
-                <td>
-                  {% if user.profile_image %}
-                    <img src="/static/uploads/{{ user.profile_image }}" alt="Profile Image" class="img-thumbnail" width="50" height="50">
-                  {% else %}
-                    <img src="/static/assets/img/default-profile.png" alt="Default Profile Image" class="img-thumbnail" width="50" height="50">
-                  {% endif %}
-                </td>
-
-                <!-- Signature Image -->
-                <td>
-                  {% if user.sign_image %}
-                    <img src="/static/uploads/{{ user.sign_image }}" alt="Signature Image" class="img-thumbnail" width="50" height="50">
-                  {% else %}
-                    <img src="/static/assets/img/default-sign.png" alt="Default Signature Image" class="img-thumbnail" width="50" height="50">
-                  {% endif %}
-                </td>
-
-                <!-- Username -->
-                <td>{{ user.username }}</td>
-                <td>{{ user.name_sf or '-' }}</td>
-                <td>{{ user.full_name or '-' }}</td>
-                <td>{{ user.role }}</td>
-
-                <!-- User Status -->
-                <td id="user-status-{{ user.id }}">
-                  {% if user.is_online %}
-                    <span class="badge badge-success">Online</span>
-                  {% else %}
-                    <span class="badge badge-danger">Offline</span>
-                  {% endif %}
-                </td>
-
-                <!-- Section & Department Roles -->
-                <td>
-                  {% if user.role == 'section_head' %}
-                    <a href="/view_user/{{ user.id }}" class="btn btn-warning btn-sm">
-                      <i class="fas fa-eye"></i> View
-                    </a>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if user.role == 'department_head' %}
-                    <a href="/view_user_cat_roles/{{ user.id }}" class="btn btn-warning btn-sm">
-                      <i class="fas fa-eye"></i> View
-                    </a>
-                  {% endif %}
-                </td>
-
-                <!-- Activity Logs -->
-                <td>
-                  <a href="/activity_logs/{{ user.id }}" class="btn btn-warning btn-sm">
-                    <i class="fas fa-history"></i> View
-                  </a>
-                </td>
-
-                <!-- Actions -->
-                <td>
-                  <div class="btn-group" role="group">
-                    <a href="/edit_user/{{ user.id }}" class="btn btn-info btn-sm" title="Edit User">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                    <a href="{{ url_for('authentication_blueprint.delete_user', id=user.id) }}"
-                       class="btn btn-danger btn-sm"
-                       onclick="return confirm('Are you sure you want to delete user: {{ user.username }}?');"
-                       title="Delete User">
-                      <i class="fas fa-trash-alt"></i>
-                    </a>
+      <div class="card card-church shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive p-3">
+            <table id="accountsTable" class="table table-hover table-middle" style="width:100%">
+              <thead class="bg-light text-muted small">
+                <tr>
+                  <th style="width: 100px">Identity</th>
+                  <th>Username</th>
+                  <th>Full Name</th>
+                  <th>System Role</th>
+                  <th>Last Active</th>
+                  <th>Status</th>
+                  <th class="text-right">Manage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr id="user-row-{{ user.id }}">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="{{ url_for('static', filename='uploads/' + user.profile_image) if user.profile_image else '/static/assets/img/default-profile.png' }}" 
+                           class="user-avatar viewer-trigger mr-2" title="View Profile">
+                      
+                      <img src="{{ url_for('static', filename='uploads/' + user.sign_image) if user.sign_image else '/static/assets/img/default-sign.png' }}" 
+                           class="user-sign-thumb viewer-trigger" title="View Signature">
+                    </div>
+                  </td>
+                  <td>
+                    <span class="text-bold text-dark">{{ user.username }}</span>
+                    <div class="small text-muted">ID: #{{ user.id }}</div>
+                  </td>
+                  <td>{{ user.full_name or '---' }}</td>
+                  <td>
+                    <span class="badge badge-light border role-badge">
+                      {{ user.role | replace('_', ' ') }}
+                    </span>
+                  </td>
+                  <td class="small text-muted">
+                    {{ user.last_activity.strftime('%d %b, %H:%M') if user.last_activity else 'Never' }}
+                  </td>
+                  <td class="status-cell">
                     {% if user.is_online %}
-                    <a href="{{ url_for('authentication_blueprint.force_logout', user_id=user.id) }}"
-                       class="btn btn-warning btn-sm"
-                       onclick="return confirm('Force sign out {{ user.username }}?');"
-                       title="Force Logout">
-                      <i class="fas fa-sign-out-alt"></i>
-                    </a>
+                      <span class="text-success small font-weight-bold"><span class="status-dot dot-online"></span>Online</span>
+                    {% else %}
+                      <span class="text-muted small"><span class="status-dot dot-offline"></span>Offline</span>
                     {% endif %}
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                  </td>
+                  <td class="text-right">
+                    <div class="btn-group shadow-sm">
+                      <a href="/edit_user/{{ user.id }}" class="btn btn-sm btn-white border" title="Edit Settings">
+                        <i class="fas fa-user-edit text-primary"></i>
+                      </a>
+                      <a href="/activity_logs/{{ user.id }}" class="btn btn-sm btn-white border" title="View Logs">
+                        <i class="fas fa-history text-muted"></i>
+                      </a>
+                      <button class="btn btn-sm btn-white border text-danger" 
+                              onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')" title="Delete Account">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </section>
 </div>
+
+<div class="modal fade" id="viewerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body text-center p-0">
+        <img id="full-size-view" src="" class="img-fluid rounded shadow-lg border border-white" style="max-height: 80vh; background: #fff;">
+        <div class="mt-3"><button class="btn btn-light btn-sm rounded-pill px-4" data-dismiss="modal">Close</button></div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
-<!-- Core Scripts -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/static/assets/js/adminlte.min.js"></script>
-
-<!-- Plugins -->
-<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
-<script src="/static/assets/js/select2.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="/static/assets/js/mine.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap4.min.js"></script>
 
 <script>
-  $(function () {
-    // Initialize DataTable
-    $('#accounts').DataTable({
-      fixedColumns: {
-        left: 2,
-        right: 1
-      },
-      paging: false,
-      scrollCollapse: true,
-      scrollX: true,
-      scrollY: 300
+  $(document).ready(function() {
+    const table = $('#accountsTable').DataTable({
+      responsive: true,
+      order: [[4, 'desc']], // Sort by Last Active by default
+      columnDefs: [{ targets: [0, 6], orderable: false }]
     });
 
-    // Periodically update user online status
-    function updateUserStatus(userId) {
-      $.get('/get_user_status/' + userId, function(response) {
-        const badge = response.status === 'online'
-          ? '<span class="badge badge-success">Online</span>'
-          : '<span class="badge badge-danger">Offline</span>';
-        $('#user-status-' + userId).html(badge);
+    // Event Delegation for Image Viewer
+    $(document).on('click', '.viewer-trigger', function() {
+      $('#full-size-view').attr('src', $(this).attr('src'));
+      $('#viewerModal').modal('show');
+    });
+
+    // BATCH STATUS REFRESH (1 request for all users)
+    function refreshAllStatuses() {
+      $.getJSON("{{ url_for('authentication_blueprint.get_all_user_statuses') }}", function(data) {
+        // Data format expected: { "1": true, "2": false, ... }
+        Object.keys(data).forEach(userId => {
+          const isOnline = data[userId];
+          const cell = $(`#user-row-${userId} .status-cell`);
+          
+          if (isOnline) {
+            cell.html('<span class="text-success small font-weight-bold"><span class="status-dot dot-online"></span>Online</span>');
+          } else {
+            cell.html('<span class="text-muted small"><span class="status-dot dot-offline"></span>Offline</span>');
+          }
+        });
       });
     }
 
-    setInterval(function () {
-      {% for user in users %}
-      updateUserStatus({{ user.id }});
-      {% endfor %}
-    }, 10000); // every 10 seconds
+    // Refresh every 60 seconds (less strain on server)
+    setInterval(refreshAllStatuses, 60000);
   });
 
-  // Auto-dismiss flash messages
-  $(document).ready(function () {
-    setTimeout(function () {
-      $('.alert').fadeTo(500, 0).slideUp(500, function () {
-        $(this).remove();
-      });
-    }, 5000); // fades out after 5 seconds
-  });
+  function confirmDelete(id, name) {
+    if (confirm(`Are you sure you want to permanently delete account: ${name}?`)) {
+      window.location.href = `/delete_user/${id}`;
+    }
+  }
 </script>
 {% endblock %}

@@ -1,67 +1,79 @@
 {% extends "layouts/base-fullscreen.html" %}
 
-{% block title %} Error 404 {% endblock %} 
+{% block title %} Page Not Found {% endblock %} 
 
-<!-- Element injected in the BODY element -->
-{% block body_class %} login-page {% endblock body_class %}
+{% block body_class %} hold-transition login-page {% endblock body_class %}
 
-<!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-
-  <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/plugins/fontawesome-free/css/all.min.css') }}">
-  <!-- icheck bootstrap -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-  <!-- Theme style -->
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/adminlte.min.css') }}">
-
+  <style>
+    .error-container {
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+    }
+    .error-number {
+        font-size: 100px;
+        font-weight: 700;
+        line-height: 100px;
+        color: #adb5bd;
+        margin-bottom: 20px;
+        display: block;
+    }
+    .error-icon {
+        font-size: 60px;
+        margin-bottom: 20px;
+        color: #ffc107; /* Warning yellow */
+    }
+    .card-outline-warning {
+        border-top: 3px solid #ffc107;
+    }
+  </style>
 {% endblock stylesheets %}
 
 {% block content %}
+<div class="error-container">
+    <div class="card card-outline card-warning shadow-lg">
+        <div class="card-body login-card-body p-5">
+            
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            
+            <span class="error-number">404</span>
+            
+            <h3 class="font-weight-bold text-dark">Oops! Page not found.</h3>
+            
+            <p class="text-muted mt-3">
+                We couldn't find the page you were looking for. 
+                It might have been moved, deleted, or perhaps it never existed.
+            </p>
 
-  <div class="login-box">
+            <div class="mt-4">
+                <a href="{{ url_for('home_blueprint.index') }}" class="btn btn-primary btn-block shadow-sm">
+                    <i class="fas fa-home mr-2"></i> Take Me Home
+                </a>
+                <a href="mailto:support@yourdomain.com" class="btn btn-link btn-sm text-muted mt-2">
+                    <i class="fas fa-envelope mr-1"></i> Contact Support
+                </a>
+            </div>
 
-    <div class="login-logo">
-        <a target="_blank" rel="noopener noreferrer" 
-           href="#">#<b>#</b>#</a>
-    </div>
+            <hr class="my-4">
 
-    <!-- /.login-logo -->
-    <div class="card">
-
-      <div class="card-body login-card-body">
-
-        <h5 class="login-box-msg">
-          Error 404 - Page not found
-        </h5>
-        <p class="login-box-msg">
-          Please contact support - <a href="/" class="text-center">Home</a>
-        </p>
-
-        <br />
-        <div class="text-center">
-            &copy;_
-            <a target="_blank" rel="noopener noreferrer"
-               href="#"><b>#</b>#</a> 
-            - coded by <a target="_blank" rel="noopener noreferrer" href="#">#</a>.
+            <div class="text-center small text-muted">
+                &copy; {{ current_year or '2026' }} 
+                <strong>Your Ministry Name</strong>
+                <br>
+                <span class="opacity-50">Handcrafted for accessibility</span>
+            </div>
         </div>
-
-      </div>
-      <!-- /.login-card-body -->
     </div>
-
-  </div>
-
+</div>
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-
-  <!-- jQuery -->
   <script src="{{ url_for('static', filename='assets/plugins/jquery/jquery.min.js') }}"></script>
-  <!-- Bootstrap 4 -->
   <script src="{{ url_for('static', filename='assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
 {% endblock javascripts %}

@@ -22,7 +22,7 @@ class Config:
 
     # --- TWO DATABASE CONFIGURATIONS ---
     # Database 1 (Primary)
-    MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'shpsk')
+    MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'kibuli')
 
     # Database 2 (Secondary)
     MYSQL_DATABASE_TWO = os.getenv('MYSQL_DATABASE_TWO', 'shpsk_archive')

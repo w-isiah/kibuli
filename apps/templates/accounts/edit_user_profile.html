@@ -1,133 +1,726 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Edit User {% endblock %}
-
-{% block body_class %}sidebar-mini layout-footer-fixed{% endblock body_class %}
+{% block title %}Edit User Profile{% endblock %}
+{% block body_class %}sidebar-mini layout-fixed{% endblock %}
 
 {% block stylesheets %}
-<!-- Google Font: Source Sans Pro -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-<!-- Font Awesome -->
-<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
-<!-- Theme style -->
-<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
-<!-- Select2 -->
-<link rel="stylesheet" href="/static/assets/plugins/select2/css/select2.min.css">
-{% endblock stylesheets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/plugins/select2/css/select2.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+<style>
+  /* Profile Image Styles */
+  .profile-user-img-edit {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 3px solid #adb5bd;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+  }
+  
+  .profile-user-img-edit:hover {
+    transform: scale(1.05);
+    filter: brightness(90%);
+  }
+  
+  /* Signature Image Styles */
+  .sign-img-edit {
+    width: 180px;
+    height: auto;
+    border: 2px solid #dee2e6;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+    background: #fff;
+  }
+  
+  .sign-img-edit:hover {
+    transform: scale(1.05);
+    filter: brightness(90%);
+  }
+  
+  /* Form Section Headers */
+  .form-section-header {
+    font-weight: 700;
+    border-bottom: 2px solid #007bff;
+    margin-bottom: 20px;
+    padding-bottom: 5px;
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+  }
+  
+  /* Cropper Styles */
+  .img-container img {
+    max-width: 100%;
+  }
+  
+  .preview-wrapper {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin: 0 auto;
+  }
+  
+  /* Card Enhancements */
+  .card {
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+  }
+  
+  .card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+  }
+  
+  /* Required Field Indicator */
+  .required-field:after {
+    content: "*";
+    color: red;
+    margin-left: 4px;
+  }
+  
+  /* Loading Spinner */
+  .loading-spinner {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .profile-user-img-edit {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .sign-img-edit {
+      width: 120px;
+    }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="content-wrapper">
+  <!-- Page Header -->
   <section class="content-header">
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1>Edit User</h1>
+          <h1>
+            <i class="fas fa-user-cog mr-2"></i>
+            Edit User Profile
+          </h1>
         </div>
         <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="/index">Home</a></li>
-            <li class="breadcrumb-item"><a href="/customers">User</a></li>
-            <li class="breadcrumb-item active">Edit User</li>
-          </ol>
+          <div class="float-right">
+            <span class="badge badge-info">
+              <i class="fas fa-id-card mr-1"></i>
+              User ID #{{ user.id }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show mx-3" role="alert">
-        <strong>{{ message }}</strong>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
+  <!-- Main Content -->
   <section class="content">
     <div class="container-fluid">
-      <div class="card card-primary card-outline">
-        <div class="card-header">
-          <h3 class="card-title">Edit User Information</h3>
+      <div class="row">
+        
+        <!-- Left Column: Profile & Signature -->
+        <div class="col-md-3">
+          <!-- Profile Card -->
+          <div class="card card-primary card-outline">
+            <div class="card-body box-profile text-center">
+              <img class="profile-user-img img-fluid img-circle profile-user-img-edit viewer-trigger" 
+                   id="current-profile-preview" 
+                   title="Click to view full size"
+                   alt="Profile Image"
+                   src="{{ url_for('static', filename='uploads/' + user.profile_image) if user.profile_image else url_for('static', filename='assets/img/default-avatar.png') }}">
+              <h3 class="profile-username text-center mt-2">
+                {{ user.first_name }} {{ user.last_name }}
+              </h3>
+              <p class="text-muted text-center">
+                <i class="fas fa-tag mr-1"></i>
+                {{ user.role }}
+              </p>
+              <p class="text-muted text-center small">
+                <i class="fas fa-user mr-1"></i>
+                {{ user.username }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Signature Card -->
+          <div class="card card-secondary card-outline">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-signature mr-1"></i>
+                Official Signature
+              </h3>
+            </div>
+            <div class="card-body text-center">
+              <img class="img-fluid sign-img-edit viewer-trigger" 
+                   id="current-sign-preview"
+                   alt="Signature Image"
+                   title="Click to view full size"
+                   src="{{ url_for('static', filename='uploads/' + user.sign_image) if user.sign_image else url_for('static', filename='assets/img/no-sign.png') }}">
+              {% if not user.sign_image %}
+              <p class="text-muted small mt-2">No signature uploaded</p>
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Info Card -->
+          <div class="card card-info card-outline">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-info-circle mr-1"></i>
+                Account Info
+              </h3>
+            </div>
+            <div class="card-body">
+              <p class="small mb-2">
+                <i class="fas fa-calendar-alt mr-1"></i>
+                <strong>Last Login:</strong><br>
+                {{ user.last_login|default('Never', true) }}
+              </p>
+              <p class="small">
+                <i class="fas fa-envelope mr-1"></i>
+                <strong>Email:</strong><br>
+                {{ user.email|default('Not provided', true) }}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <form action="{{ url_for('authentication_blueprint.edit_user_profile', id=user.id) }}" method="POST" enctype="multipart/form-data">
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 form-group">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+        <!-- Right Column: Edit Form -->
+        <div class="col-md-9">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-edit mr-1"></i>
+                Edit Profile Information
+              </h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
               </div>
+            </div>
+            
+            <form id="editProfileForm" 
+                  action="{{ url_for('authentication_blueprint.edit_user_profile', id=user.id) }}" 
+                  method="POST" 
+                  enctype="multipart/form-data">
+              
+              <!-- CSRF Token -->
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              
+              <!-- Crop Data Fields -->
+              <input type="hidden" name="crop_x" id="crop_x">
+              <input type="hidden" name="crop_y" id="crop_y">
+              <input type="hidden" name="crop_w" id="crop_w">
+              <input type="hidden" name="crop_h" id="crop_h">
+              <input type="hidden" name="sign_x" id="sign_x">
+              <input type="hidden" name="sign_y" id="sign_y">
+              <input type="hidden" name="sign_w" id="sign_w">
+              <input type="hidden" name="sign_h" id="sign_h">
 
-              <div class="col-md-6 form-group">
-                <label for="first_name">First Name</label>
-                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
-              </div>
+              <div class="card-body">
+                <!-- Personal Information Section -->
+                <h5 class="form-section-header">
+                  <i class="fas fa-user mr-1"></i>
+                  Personal Information
+                </h5>
+                
+                <div class="row">
+                  <div class="col-md-6 form-group">
+                    <label class="required-field">Username</label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fas fa-user"></i>
+                        </span>
+                      </div>
+                      <input type="text" 
+                             class="form-control" 
+                             name="username" 
+                             value="{{ user.username }}" 
+                             required
+                             pattern="[a-zA-Z0-9_]{3,50}"
+                             title="Username must be 3-50 characters and can only contain letters, numbers, and underscores">
+                    </div>
+                    <small class="text-muted">3-50 characters, letters, numbers, and underscores only</small>
+                  </div>
+                  
+                  <div class="col-md-6 form-group">
+                    <label>Other Name</label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fas fa-user-tag"></i>
+                        </span>
+                      </div>
+                      <input type="text" 
+                             class="form-control" 
+                             name="other_name" 
+                             value="{{ user.other_name or '' }}"
+                             maxlength="100">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6 form-group">
+                    <label class="required-field">First Name</label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fas fa-user"></i>
+                        </span>
+                      </div>
+                      <input type="text" 
+                             class="form-control" 
+                             name="first_name" 
+                             value="{{ user.first_name }}" 
+                             required
+                             maxlength="100">
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 form-group">
+                    <label class="required-field">Last Name</label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fas fa-user"></i>
+                        </span>
+                      </div>
+                      <input type="text" 
+                             class="form-control" 
+                             name="last_name" 
+                             value="{{ user.last_name }}" 
+                             required
+                             maxlength="100">
+                    </div>
+                  </div>
+                </div>
 
-              <div class="col-md-6 form-group">
-                <label for="last_name">Last Name</label>
-                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
-              </div>
+                <!-- Media Section -->
+                <h5 class="form-section-header mt-3">
+                  <i class="fas fa-image mr-1"></i>
+                  Update Media (Optional)
+                </h5>
+                
+                <div class="row">
+                  <div class="col-md-6 form-group">
+                    <label>Change Profile Image</label>
+                    <div class="custom-file">
+                      <input type="file" 
+                             class="custom-file-input crop-trigger" 
+                             name="profile_image" 
+                             accept="image/jpeg,image/png,image/gif,image/webp"
+                             data-aspect="1" 
+                             data-prefix="crop"
+                             data-target="profile">
+                      <label class="custom-file-label" for="profile_image">Choose file...</label>
+                    </div>
+                    <small class="text-muted">Accepted formats: JPG, PNG, GIF, WEBP. Max size: 5MB</small>
+                  </div>
+                  
+                  <div class="col-md-6 form-group">
+                    <label>Change Signature</label>
+                    <div class="custom-file">
+                      <input type="file" 
+                             class="custom-file-input crop-trigger" 
+                             name="sign_image" 
+                             accept="image/jpeg,image/png"
+                             data-aspect="3.125" 
+                             data-prefix="sign"
+                             data-target="signature">
+                      <label class="custom-file-label" for="sign_image">Choose file...</label>
+                    </div>
+                    <small class="text-muted">Accepted formats: JPG, PNG. Recommended aspect ratio: 3.125:1</small>
+                  </div>
+                </div>
 
-              <div class="col-md-6 form-group">
-                <label for="other_name">Other Name</label>
-                <input type="text" class="form-control" id="other_name" name="other_name" value="{{ user.other_name }}">
-              </div>
-
-              <div class="col-md-6 form-group">
-                <label for="password">Password (Leave blank to keep current)</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter a new password">
-              </div>
-
-              <div class="col-md-6 form-group align-self-end">
-                <div class="form-check mt-4">
-                  <input class="form-check-input" type="checkbox" id="show_password">
-                  <label class="form-check-label" for="show_password">Show Password</label>
+                <!-- Security Section -->
+                <h5 class="form-section-header mt-3">
+                  <i class="fas fa-lock mr-1"></i>
+                  Security
+                </h5>
+                
+                <div class="row">
+                  <div class="col-md-12 form-group">
+                    <label>New Password</label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fas fa-key"></i>
+                        </span>
+                      </div>
+                      <input type="password" 
+                             class="form-control" 
+                             name="password" 
+                             id="password"
+                             placeholder="Leave blank to keep current password"
+                             pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                             title="Password must be at least 8 characters and contain at least one number, one uppercase and one lowercase letter">
+                    </div>
+                    <div id="passwordHelp" class="form-text text-muted small">
+                      <i class="fas fa-info-circle"></i> 
+                      Password must be at least 8 characters and contain uppercase, lowercase, and numbers
+                    </div>
+                    <div class="mt-2">
+                      <div class="progress" style="height: 5px;">
+                        <div id="passwordStrength" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-             
-
-              <div class="col-md-6 form-group">
-                <label for="profile_image">Profile Image</label>
-                <input type="file" class="form-control-file" id="profile_image" name="profile_image" accept="image/*">
-                <small class="form-text text-muted">Upload a profile image (optional).</small>
-                {% if user.profile_image %}
-                  <img src="/static/uploads/{{ user.profile_image }}" alt="Profile Image" class="img-thumbnail mt-2" width="150">
-                {% else %}
-                  <p class="text-muted mt-2">No profile image available</p>
-                {% endif %}
+              <!-- Form Footer -->
+              <div class="card-footer bg-light">
+                <div class="row">
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                      <i class="fas fa-save mr-1"></i> Save Changes
+                    </button>
+                    <button type="reset" class="btn btn-warning" id="resetBtn">
+                      <i class="fas fa-undo mr-1"></i> Reset
+                    </button>
+                    <a href="{{ url_for('home_blueprint.index') }}" class="btn btn-default float-right">
+                      <i class="fas fa-times mr-1"></i> Cancel
+                    </a>
+                  </div>
+                </div>
               </div>
-            </div>
+            </form>
           </div>
-          <div class="card-footer text-center">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   </section>
 </div>
-{% endblock content %}
+
+<!-- Cropper Modal -->
+<div class="modal fade" id="cropperModal" data-backdrop="static" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-crop-alt mr-1"></i>
+          Crop Image
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-8 border-right">
+            <div class="img-container">
+              <img id="imageToCrop" src="" alt="Image to crop">
+            </div>
+          </div>
+          <div class="col-md-4 text-center">
+            <h6>Preview</h6>
+            <div id="cropPreview" class="preview-wrapper mx-auto mb-3"></div>
+            <div class="alert alert-info small">
+              <i class="fas fa-info-circle"></i>
+              Drag to adjust crop area
+            </div>
+            <button type="button" class="btn btn-success btn-block" id="btnApplyCrop">
+              <i class="fas fa-check mr-1"></i> Apply Crop
+            </button>
+            <button type="button" class="btn btn-secondary btn-block" id="btnResetCrop">
+              <i class="fas fa-undo mr-1"></i> Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Viewer Modal -->
+<div class="modal fade" id="viewerModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body text-center p-0">
+        <img id="full-size-view" src="" class="img-fluid rounded shadow-lg" alt="Full size view">
+        <button type="button" class="btn btn-dark mt-3" data-dismiss="modal">
+          <i class="fas fa-times mr-1"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="loading-spinner" id="loadingSpinner">
+  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>
+{% endblock %}
 
 {% block javascripts %}
-<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
-<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/static/assets/js/adminlte.min.js"></script>
-<script src="/static/assets/plugins/select2/js/select2.full.min.js"></script>
+<script src="{{ url_for('static', filename='assets/plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <script>
-  $(function () {
-    $('.select2').select2();
-
-    $('#show_password').on('change', function () {
-      const passwordField = $('#password');
-      passwordField.attr('type', this.checked ? 'text' : 'password');
+$(function () {
+  // Initialize custom file input
+  bsCustomFileInput.init();
+  
+  // Variables
+  let cropper = null;
+  let activePrefix = null;
+  let currentFile = null;
+  
+  // Password strength checker
+  function checkPasswordStrength(password) {
+    let strength = 0;
+    const progressBar = $('#passwordStrength');
+    
+    if (password.length >= 8) strength += 25;
+    if (password.match(/[a-z]+/)) strength += 25;
+    if (password.match(/[A-Z]+/)) strength += 25;
+    if (password.match(/[0-9]+/)) strength += 25;
+    
+    progressBar.css('width', strength + '%');
+    
+    if (strength <= 25) {
+      progressBar.removeClass('bg-success bg-warning').addClass('bg-danger');
+    } else if (strength <= 50) {
+      progressBar.removeClass('bg-success bg-danger').addClass('bg-warning');
+    } else {
+      progressBar.removeClass('bg-danger bg-warning').addClass('bg-success');
+    }
+    
+    return strength;
+  }
+  
+  // Password input handler
+  $('#password').on('input', function() {
+    checkPasswordStrength($(this).val());
+  });
+  
+  // Image viewer trigger
+  $('.viewer-trigger').on('click', function() {
+    const imgSrc = $(this).attr('src');
+    if (imgSrc && !imgSrc.includes('default-avatar') && !imgSrc.includes('no-sign')) {
+      $('#full-size-view').attr('src', imgSrc);
+      $('#viewerModal').modal('show');
+    }
+  });
+  
+  // Crop trigger
+  $('.crop-trigger').on('change', function(e) {
+    const file = e.target.files[0];
+    activePrefix = $(this).data('prefix');
+    const aspect = parseFloat($(this).data('aspect'));
+    const target = $(this).data('target');
+    
+    if (file) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'File Too Large',
+          text: 'Please select an image smaller than 5MB'
+        });
+        $(this).val('');
+        bsCustomFileInput.init();
+        return;
+      }
+      
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid File Type',
+          text: 'Please select a valid image file (JPG, PNG, GIF, WEBP)'
+        });
+        $(this).val('');
+        bsCustomFileInput.init();
+        return;
+      }
+      
+      currentFile = file;
+      const reader = new FileReader();
+      
+      reader.onload = function(event) {
+        $('#imageToCrop').attr('src', event.target.result);
+        
+        // Set preview container styles
+        if (activePrefix === 'crop') {
+          $('#cropPreview').css({
+            'width': '150px',
+            'height': '150px',
+            'border-radius': '50%',
+            'overflow': 'hidden'
+          });
+        } else {
+          $('#cropPreview').css({
+            'width': '250px',
+            'height': '80px',
+            'border-radius': '0',
+            'overflow': 'hidden'
+          });
+        }
+        
+        $('#cropperModal').modal('show');
+      };
+      
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Cropper modal shown
+  $('#cropperModal').on('shown.bs.modal', function() {
+    const image = document.getElementById('imageToCrop');
+    const aspectRatio = $(this).data('aspect');
+    
+    if (cropper) {
+      cropper.destroy();
+    }
+    
+    cropper = new Cropper(image, {
+      aspectRatio: aspectRatio,
+      viewMode: 1,
+      dragMode: 'move',
+      preview: '#cropPreview',
+      autoCropArea: 0.8,
+      restore: false,
+      guides: true,
+      center: true,
+      highlight: false,
+      cropBoxMovable: true,
+      cropBoxResizable: true,
+      toggleDragModeOnDblclick: false
     });
   });
+  
+  // Cropper modal hidden
+  $('#cropperModal').on('hidden.bs.modal', function() {
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    $('#imageToCrop').attr('src', '');
+  });
+  
+  // Apply crop button
+  $('#btnApplyCrop').on('click', function() {
+    if (cropper) {
+      const data = cropper.getData();
+      $(`#${activePrefix}_x`).val(Math.round(data.x));
+      $(`#${activePrefix}_y`).val(Math.round(data.y));
+      $(`#${activePrefix}_w`).val(Math.round(data.width));
+      $(`#${activePrefix}_h`).val(Math.round(data.height));
+      
+      // Update preview image
+      const canvas = cropper.getCroppedCanvas();
+      const targetImg = activePrefix === 'crop' ? '#current-profile-preview' : '#current-sign-preview';
+      $(targetImg).attr('src', canvas.toDataURL());
+      
+      $('#cropperModal').modal('hide');
+      
+      // Show success message
+      Swal.fire({
+        icon: 'success',
+        title: 'Image Cropped',
+        text: 'Image has been cropped successfully',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  });
+  
+  // Reset crop button
+  $('#btnResetCrop').on('click', function() {
+    if (cropper) {
+      cropper.reset();
+      cropper.clear();
+    }
+  });
+  
+  // Form submission handler
+  $('#editProfileForm').on('submit', function(e) {
+    const submitBtn = $('#submitBtn');
+    const originalText = submitBtn.html();
+    
+    // Show loading spinner
+    $('#loadingSpinner').fadeIn();
+    submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
+    submitBtn.prop('disabled', true);
+    
+    // Allow form to submit
+    setTimeout(function() {
+      $('#loadingSpinner').fadeOut();
+      submitBtn.html(originalText);
+      submitBtn.prop('disabled', false);
+    }, 2000);
+  });
+  
+  // Reset button handler
+  $('#resetBtn').on('click', function(e) {
+    e.preventDefault();
+    
+    Swal.fire({
+      title: 'Reset Form?',
+      text: 'All unsaved changes will be lost!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, reset it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $('#editProfileForm')[0].reset();
+        bsCustomFileInput.init();
+        
+        // Reset image previews to original
+        const originalProfileSrc = "{{ url_for('static', filename='uploads/' + user.profile_image) if user.profile_image else url_for('static', filename='assets/img/default-avatar.png') }}";
+        const originalSignSrc = "{{ url_for('static', filename='uploads/' + user.sign_image) if user.sign_image else url_for('static', filename='assets/img/no-sign.png') }}";
+        
+        $('#current-profile-preview').attr('src', originalProfileSrc);
+        $('#current-sign-preview').attr('src', originalSignSrc);
+        
+        // Clear crop data
+        $('#crop_x, #crop_y, #crop_w, #crop_h, #sign_x, #sign_y, #sign_w, #sign_h').val('');
+        
+        Swal.fire('Reset!', 'Form has been reset.', 'success');
+      }
+    });
+  });
+  
+  // Confirm before leaving with unsaved changes
+  let formChanged = false;
+  $('#editProfileForm input, #editProfileForm select').on('change', function() {
+    formChanged = true;
+  });
+  
+  window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+  
+  $('#editProfileForm').on('submit', function() {
+    formChanged = false;
+  });
+});
 </script>
-{% endblock javascripts %}
+{% endblock %}

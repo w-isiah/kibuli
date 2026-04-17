@@ -1,128 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="/static/uploads/id_image/logo2.png" type="image/x-icon">
-  <link rel="canonical" href="#"/>
-  
-  <title>
-    stockvel kata - {% block title %}{% endblock %} | online
-  </title>
 
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-  <!-- AdminLTE -->
-  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
-  
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="/static/assets/css/mine.css">
-  
-  {% block stylesheets %}{% endblock stylesheets %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>
+COU - {% block title %}{% endblock %} | Online
+</title>
+
+<link rel="icon" href="{{ url_for('static', filename='uploads/id_image/logo2.png') }}">
+
+<!-- Google Font -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/plugins/fontawesome-free/css/all.min.css') }}">
+
+<!-- AdminLTE -->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/adminlte.min.css') }}">
+
+<!-- Toastr -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<!-- Custom -->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/mine.css') }}">
+
+{% block stylesheets %}{% endblock %}
 
 </head>
-<body class="hold-transition {% block body_class %}{% endblock body_class %}">
+
+
+<body class="hold-transition {% block body_class %}{% endblock %}">
+
 <div class="wrapper">
 
-  {% include 'includes/navigation.html' %}
-  {% include 'includes/sidebar.html' %}
+{% include "includes/navigation.html" %}
+{% include "includes/sidebar.html" %}
 
-  <!-- Flash Messages Data Container -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  <div id="flash-data" style="display:none">
-    {% for category, message in messages %}
-    <span data-category="{{ category }}" data-message="{{ message|e }}"></span>
-    {% endfor %}
-  </div>
-  {% endif %}
-  {% endwith %}
 
-  {% block content %}{% endblock content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div id="flash-data" style="display:none">
 
-  {% include 'includes/footer.html' %}
-
-  <!-- Control Sidebar -->
-  <aside class="control-sidebar control-sidebar-dark">
-    <!-- Control sidebar content goes here -->
-  </aside>
-  <!-- /.control-sidebar -->
+{% for category, message in messages %}
+<span data-category="{{ category }}" data-message="{{ message|e }}"></span>
+{% endfor %}
 
 </div>
-<!-- ./wrapper -->
+{% endif %}
+{% endwith %}
 
-<!-- jQuery -->
-<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="/static/assets/js/adminlte.js"></script>
-<!-- Toastr -->
+
+{% block content %}{% endblock %}
+
+
+{% include "includes/footer.html" %}
+
+
+<aside class="control-sidebar control-sidebar-dark"></aside>
+
+</div>
+
+
+
+<script src="{{ url_for('static', filename='assets/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/adminlte.js') }}"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-<!-- Base JavaScript -->
+
 <script>
-$(document).ready(function() {
-  // Initialize Toastr notifications
-  toastr.options = {
-    "closeButton": true,
-    "progressBar": true,
-    "positionClass": "toast-top-right",
-    "timeOut": "5000",
-    "extendedTimeOut": "1000",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-  };
 
-  // Show flash messages as toast notifications
-  $('#flash-data span').each(function () {
-    const category = $(this).data('category');
-    const message = $(this).data('message');
-    
-    switch(category) {
-      case 'success':
-        toastr.success(message);
-        break;
-      case 'error':
-      case 'danger':
-        toastr.error(message);
-        break;
-      case 'warning':
-        toastr.warning(message);
-        break;
-      case 'info':
-      default:
-        toastr.info(message);
-    }
-  });
+$(function(){
 
-  // Auto-hide toast notifications after 5 seconds
-  setTimeout(function() {
-    $('.toast').fadeOut('slow');
-  }, 5000);
+toastr.options = {
+closeButton:true,
+progressBar:true,
+positionClass:"toast-top-right",
+timeOut:"5000"
+};
 
-  // Global click handler for dashboard buttons (if used)
-  $(document).on('click', '.dashboard-btn', function() {
-    $(this).addClass('active');
-    setTimeout(() => {
-      $(this).removeClass('active');
-    }, 300);
-  });
+$("#flash-data span").each(function(){
 
-  // Initialize tooltips globally
-  $('[data-toggle="tooltip"]').tooltip();
-  
-  // Initialize popovers globally
-  $('[data-toggle="popover"]').popover();
+const category=$(this).data("category");
+const message=$(this).data("message");
+
+if(category==="success"){toastr.success(message);}
+else if(category==="danger"||category==="error"){toastr.error(message);}
+else if(category==="warning"){toastr.warning(message);}
+else{toastr.info(message);}
+
 });
+
+$('[data-toggle="tooltip"]').tooltip();
+$('[data-toggle="popover"]').popover();
+
+});
+
 </script>
 
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}{% endblock %}
 
 </body>
 </html>

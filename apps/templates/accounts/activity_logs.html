@@ -1,45 +1,39 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Activities{% endblock %}
-{% block body_class %}sidebar-mini{% endblock %}
+{% block title %} Activity Logs {% endblock %}
+{% block body_class %}sidebar-mini layout-fixed{% endblock %}
 
 {% block stylesheets %}
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" rel="stylesheet">
-
-  <!-- Icons & Fonts -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
-
-  <!-- AdminLTE & Plugins -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="/static/assets/css/adminlte.min.css" rel="stylesheet">
-  <link href="/static/assets/css/mine.css" rel="stylesheet">
-  <link href="/static/assets/css/select2.min.css" rel="stylesheet">
-
-  <!-- DataTables -->
+  
   <link href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" rel="stylesheet">
   <link href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.dataTables.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" rel="stylesheet">
 
-  <!-- Flash Messages -->
   <style>
     .alert-container {
       position: fixed;
-      top: 20px;
+      top: 25px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
-      width: 80%;
-      max-width: 600px;
-      display: none;
+      width: 100%;
+      max-width: 500px;
     }
-    .alert {
-      opacity: 1;
-      transition: opacity 1s ease-out;
-      margin-bottom: 10px;
+    .card-activity {
+      border-top: 3px solid #6f42c1; /* Purple Theme */
     }
-    .alert.alert-dismissible {
-      padding-right: 30px;
+    .time-badge {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 600;
+    }
+    .table thead th {
+      background-color: #f4f6f9;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
     }
   </style>
 {% endblock %}
@@ -47,36 +41,28 @@
 {% block content %}
 <div class="content-wrapper">
 
-  <!-- Content Header -->
   <section class="content-header">
     <div class="container-fluid">
-      <div class="row mb-2 align-items-center">
+      <div class="row mb-2">
         <div class="col-sm-6">
-          <h1>Activities</h1>
+          <h1 class="text-bold"><i class="fas fa-history mr-2 text-purple"></i>System Activities</h1>
         </div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="/index">Home</a></li>
-          
-            <li class="breadcrumb-item active">activities_list</li>
+            <li class="breadcrumb-item active">Activity Audit</li>
           </ol>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Flash Messages -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="alert-container" id="flashMessageContainer">
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            <i class="fas fa-{{ 
-              'check-circle' if category == 'success' 
-              else 'exclamation-circle' if category == 'warning' 
-              else 'times-circle' if category == 'danger' 
-              else 'info-circle' }}"></i>
-            <span>{{ message }}</span>
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-lg" role="alert">
+            <i class="fas fa-info-circle mr-2"></i> {{ message }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -86,31 +72,49 @@
     {% endif %}
   {% endwith %}
 
-  <!-- Main Content -->
   <section class="content">
     <div class="container-fluid">
-
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Activities List</h3>
+      
+      <div class="card card-activity shadow-sm">
+        <div class="card-header bg-white">
+          <h3 class="card-title text-muted">Authentication Logs</h3>
+          <div class="card-tools">
+            <button type="button" id="exportExcel" class="btn btn-tool text-success">
+              <i class="fas fa-file-excel mr-1"></i> Export
+            </button>
+          </div>
         </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <!-- KEEP your table exactly as is -->
-            <table id="accounts" class="display nowrap stripe" style="width:100%">
+        
+        <div class="card-body p-0">
+          <div class="table-responsive p-3">
+            <table id="activityTable" class="table table-hover table-striped display nowrap" style="width:100%">
               <thead>
                 <tr>
-                  <th>Username</th>
-                  <th>Login Time</th>
-                  <th>Logout Time</th>
+                  <th><i class="fas fa-user mr-1"></i> User</th>
+                  <th><i class="fas fa-sign-in-alt mr-1"></i> Login Time</th>
+                  <th><i class="fas fa-sign-out-alt mr-1"></i> Logout Time</th>
+                  <th><i class="fas fa-clock mr-1"></i> Status</th>
                 </tr>
               </thead>
               <tbody>
                 {% for activity in activities %}
                   <tr>
-                    <td>{{ activity.username }}</td>
-                    <td>{{ activity.login_time }}</td>
-                    <td>{{ activity.logout_time }}</td>
+                    <td class="text-bold">{{ activity.username }}</td>
+                    <td class="time-badge text-primary">{{ activity.login_time }}</td>
+                    <td class="time-badge">
+                      {% if activity.logout_time %}
+                        {{ activity.logout_time }}
+                      {% else %}
+                        <span class="text-muted italic">Session Ongoing</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if not activity.logout_time %}
+                        <span class="badge badge-success badge-pill elevation-1">Active Now</span>
+                      {% else %}
+                        <span class="badge badge-light border badge-pill">Logged Out</span>
+                      {% endif %}
+                    </td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -121,38 +125,48 @@
 
     </div>
   </section>
-
 </div>
 {% endblock %}
 
 {% block javascripts %}
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/static/assets/js/adminlte.js"></script>
+  <script src="/static/assets/js/adminlte.min.js"></script>
 
   <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
-  <script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
-
-  <script src="/static/assets/js/mine.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script>
     $(document).ready(function() {
-      $('#accounts').DataTable({
-        fixedColumns: { left: 1, right: 1 },
-        paging: false,
-        scrollX: true,
-        scrollY: '300px',
-        scrollCollapse: true,
-        stateSave: true
+      // Initialize DataTable
+      const table = $('#activityTable').DataTable({
+        responsive: true,
+        order: [[1, 'desc']], // Sort by Login Time by default
+        pageLength: 25,
+        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        language: {
+          search: "_INPUT_",
+          searchPlaceholder: "Filter activities..."
+        }
       });
 
+      // Simple Export to Excel Functionality
+      $('#exportExcel').on('click', function() {
+        const data = table.rows().data().toArray();
+        const ws = XLSX.utils.aoa_to_sheet([
+          ["Username", "Login Time", "Logout Time", "Status"],
+          ...data.map(row => [row[0], row[1], row[2], row[3]])
+        ]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Activities");
+        XLSX.writeFile(wb, "Ministry_Activity_Log.xlsx");
+      });
+
+      // Auto-dismiss flashes
       const flash = $('#flashMessageContainer');
       if (flash.length) {
-        flash.fadeIn(500).delay(3000).fadeOut(1000);
+        flash.delay(4000).fadeOut(1000);
       }
     });
   </script>

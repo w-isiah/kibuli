@@ -1,0 +1,293 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Affiliations Directory{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- HEADER -->
+    <div class="content-header">
+        <div class="container-fluid">
+
+            <div class="row align-items-center">
+
+                <div class="col-md-6">
+                    <h1 class="m-0 text-dark font-weight-bold">
+                        <i class="fas fa-handshake mr-2 text-primary"></i>
+                        Affiliations Directory
+                    </h1>
+                </div>
+
+                <div class="col-md-6 text-right">
+
+                    <!-- SEARCH -->
+                    <div class="d-inline-block mr-2">
+                        <div class="input-group input-group-sm" style="width:250px">
+                            <input type="text" id="tableSearch" class="form-control"
+                                   placeholder="Search affiliations...">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-white">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADD BUTTON -->
+                    <button class="btn btn-primary btn-sm shadow-sm font-weight-bold"
+                            data-toggle="modal"
+                            data-target="#addAffiliationModal">
+
+                        <i class="fas fa-plus mr-1"></i>
+                        New Affiliation
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <section class="content">
+        <div class="container-fluid">
+
+            <div class="card card-outline card-primary shadow-sm">
+
+                <div class="card-body p-0">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover mb-0" id="affiliationTable">
+
+                            <thead class="bg-light text-uppercase small text-muted">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Organization</th>
+                                    <th>Type</th>
+                                    <th>Email</th>
+                                    <th>Country</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-right pr-4">Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for item in affiliations %}
+
+                                <tr>
+
+                                    <td>
+                                        <span class="badge badge-light border">#{{ item.id }}</span>
+                                    </td>
+
+                                    <td>
+                                        <div class="font-weight-bold text-primary">
+                                            {{ item.name }}
+                                        </div>
+                                        <small class="text-muted">{{ item.acronym }}</small>
+                                    </td>
+
+                                    <td>{{ item.type }}</td>
+
+                                    <td>{{ item.contact_email }}</td>
+
+                                    <td>
+                                        <i class="fas fa-globe mr-1 text-muted"></i>
+                                        {{ item.country }}
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        <span class="badge px-3
+                                            {% if item.status == 'Active' %}
+                                                badge-success
+                                            {% else %}
+                                                badge-secondary
+                                            {% endif %}
+                                        ">
+                                            {{ item.status }}
+                                        </span>
+
+                                    </td>
+
+                                    <td class="text-right pr-4">
+
+                                        <button class="btn btn-sm btn-info"
+                                                data-toggle="modal"
+                                                data-target="#editModal{{ item.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+
+                                        <button class="btn btn-sm btn-danger"
+                                                data-toggle="modal"
+                                                data-target="#deleteModal{{ item.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+</div>
+
+<!-- =========================
+     ADD AFFILIATION MODAL
+========================= -->
+<div class="modal fade" id="addAffiliationModal">
+
+    <div class="modal-dialog">
+
+        <form action="{{ url_for('affiliations_blueprint.add_affiliation') }}" method="POST">
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Register Affiliation</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input class="form-control mb-2" name="name" placeholder="Organization Name" required>
+
+                    <div class="row">
+                        <div class="col">
+                            <input class="form-control mb-2" name="type" placeholder="Type" required>
+                        </div>
+                        <div class="col">
+                            <input class="form-control mb-2" name="acronym" placeholder="Acronym">
+                        </div>
+                    </div>
+
+                    <input class="form-control mb-2" name="registration_number" placeholder="Registration Number">
+                    <input class="form-control mb-2" name="contact_email" placeholder="Email">
+                    <input class="form-control mb-2" name="phone_number" placeholder="Phone">
+                    <input class="form-control mb-2" name="website_url" placeholder="Website">
+                    <textarea class="form-control mb-2" name="physical_address" placeholder="Address"></textarea>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary btn-sm">Save</button>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     EDIT + DELETE MODALS
+========================= -->
+
+{% for item in affiliations %}
+
+<!-- EDIT -->
+<div class="modal fade" id="editModal{{ item.id }}">
+    <div class="modal-dialog">
+
+        <form action="{{ url_for('affiliations_blueprint.edit_affiliation', affiliation_id=item.id) }}" method="POST">
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="modal-content">
+
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Edit {{ item.name }}</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input class="form-control mb-2" name="name" value="{{ item.name }}">
+
+                    <select class="form-control" name="status">
+                        {% for s in ['Active','Inactive','Suspended','Dissolved'] %}
+                        <option value="{{ s }}" {% if item.status == s %}selected{% endif %}>
+                            {{ s }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                    <button class="btn btn-info btn-sm">Update</button>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- DELETE -->
+<div class="modal fade" id="deleteModal{{ item.id }}">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+
+        <form action="{{ url_for('affiliations_blueprint.delete_affiliation', affiliation_id=item.id) }}" method="POST">
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="modal-content text-center p-3">
+
+                <i class="fas fa-exclamation-triangle text-danger fa-3x mb-2"></i>
+
+                <p>Delete</p>
+                <h6>{{ item.name }}?</h6>
+
+                <button class="btn btn-light btn-sm" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger btn-sm">Delete</button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endfor %}
+
+{% endblock %}
+
+{% block javascripts %}
+
+<script>
+$(document).ready(function () {
+    $("#tableSearch").on("keyup", function () {
+        let value = $(this).val().toLowerCase();
+        $("#affiliationTable tbody tr").filter(function () {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+});
+</script>
+
+{% endblock %}
