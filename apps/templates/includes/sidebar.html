@@ -53,6 +53,20 @@
         </li>
 
         <li class="nav-item">
+          <a href="/manage_courses" class="nav-link {% if segment == 'manage_courses' %}active{% endif %}">
+            <i class="nav-icon fas fa-book-open"></i>
+            <p>Courses</p>
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a href="/manage_course_units" class="nav-link {% if segment == 'manage_course_units' %}active{% endif %}">
+            <i class="nav-icon fas fa-layer-group"></i>
+            <p>Course Units</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
           <a href="/manage_users" class="nav-link {% if segment == 'manage_users' %}active{% endif %}">
             <i class="nav-icon fas fa-users-cog"></i>
             <p>User Access Control</p>

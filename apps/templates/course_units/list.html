@@ -1,0 +1,240 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Course Units Directory{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="m-0 text-dark font-weight-bold">
+                        <i class="fas fa-layer-group mr-2 text-primary"></i>Course Units Directory
+                    </h1>
+                </div>
+                <div class="col-md-6 text-right">
+                    <div class="d-inline-block mr-2">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search units...">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm shadow-sm font-weight-bold" data-toggle="modal" data-target="#addUnitModal">
+                        <i class="fas fa-plus mr-1"></i> New Unit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="card card-outline card-primary shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="unitsTable">
+                            <thead class="bg-light text-muted text-uppercase small">
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Unit Name</th>
+                                    <th>Parent Course</th>
+                                    <th>Credits</th>
+                                    <th>Sem/Term</th>
+                                    <th class="text-right pr-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in units %}
+                                <tr>
+                                    <td><span class="badge badge-light border"><code>{{ item.unit_code }}</code></span></td>
+                                    <td>
+                                        <div class="font-weight-bold text-primary">{{ item.unit_name }}</div>
+                                    </td>
+                                    <td>{{ item.course_name }}</td>
+                                    <td><span class="badge badge-secondary">{{ item.credit_units }}</span></td>
+                                    <td>Sem {{ item.semester }} | Term {{ item.term }}</td>
+                                    <td class="text-right pr-4">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-white text-info border shadow-sm mr-1" data-toggle="modal" data-target="#editModal{{ item.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-white text-danger border shadow-sm" data-toggle="modal" data-target="#deleteModal{{ item.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="addUnitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ url_for('course_units_blueprint.add_course_unit') }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-plus-circle mr-2"></i>Register New Unit</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="small font-weight-bold">PARENT COURSE</label>
+                        <select name="course_id" class="form-control" required>
+                            <option value="">-- Select Course --</option>
+                            {% for c in courses %}
+                            <option value="{{ c.id }}">{{ c.course_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">UNIT NAME</label>
+                                <input type="text" name="unit_name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">CODE</label>
+                                <input type="text" name="unit_code" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">CREDITS</label>
+                                <input type="number" name="credit_units" class="form-control" value="3">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">SEMESTER</label>
+                                <input type="number" name="semester" class="form-control" value="1">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">TERM</label>
+                                <input type="number" name="term" class="form-control" value="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">DESCRIPTION</label>
+                        <textarea name="description" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-link text-muted" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Save Unit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% for item in units %}
+<div class="modal fade" id="editModal{{ item.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ url_for('course_units_blueprint.edit_course_unit', unit_id=item.id) }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title font-weight-bold">Edit {{ item.unit_code }}</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="small font-weight-bold">PARENT COURSE</label>
+                        <select name="course_id" class="form-control" required>
+                            {% for c in courses %}
+                            <option value="{{ c.id }}" {% if item.course_id == c.id %}selected{% endif %}>{{ c.course_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">UNIT NAME</label>
+                                <input type="text" name="unit_name" class="form-control" value="{{ item.unit_name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">CODE</label>
+                                <input type="text" name="unit_code" class="form-control" value="{{ item.unit_code }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">CREDITS</label>
+                                <input type="number" name="credit_units" class="form-control" value="{{ item.credit_units }}">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">SEMESTER</label>
+                                <input type="number" name="semester" class="form-control" value="{{ item.semester }}">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">TERM</label>
+                                <input type="number" name="term" class="form-control" value="{{ item.term }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">DESCRIPTION</label>
+                        <textarea name="description" class="form-control" rows="2">{{ item.description }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link text-muted" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info px-4">Update Changes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal{{ item.id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <form action="{{ url_for('course_units_blueprint.delete_course_unit', unit_id=item.id) }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-content border-0 shadow-lg p-3 text-center">
+                <i class="fas fa-trash text-danger fa-3x mb-3"></i>
+                <p>Are you sure you want to delete <strong>{{ item.unit_name }}</strong>?</p>
+                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    $(document).ready(function(){
+      $("#tableSearch").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#unitsTable tbody tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+      });
+    });
+</script>
+{% endblock %}

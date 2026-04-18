@@ -1,0 +1,236 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Courses Directory{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="m-0 text-dark font-weight-bold">
+                        <i class="fas fa-book-open mr-2 text-primary"></i>Courses Directory
+                    </h1>
+                </div>
+                <div class="col-md-6 text-right">
+                    <div class="d-inline-block mr-2">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search courses...">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm shadow-sm font-weight-bold" data-toggle="modal" data-target="#addCourseModal">
+                        <i class="fas fa-plus mr-1"></i> New Course
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="card card-outline card-primary shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="coursesTable">
+                            <thead class="bg-light text-muted text-uppercase small">
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Course Name</th>
+                                    <th>College/Affiliation</th>
+                                    <th>Level</th>
+                                    <th>Version</th>
+                                    <th class="text-right pr-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in courses %}
+                                <tr>
+                                    <td><span class="badge badge-light border"><code>{{ item.course_code }}</code></span></td>
+                                    <td>
+                                        <div class="font-weight-bold text-primary">{{ item.course_name }}</div>
+                                    </td>
+                                    <td>{{ item.affiliation_name }}</td>
+                                    <td>{{ item.level }}</td>
+                                    <td><span class="badge badge-info">{{ item.version }}</span></td>
+                                    <td class="text-right pr-4">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-white text-info border shadow-sm mr-1" data-toggle="modal" data-target="#editModal{{ item.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-white text-danger border shadow-sm" data-toggle="modal" data-target="#deleteModal{{ item.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="addCourseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ url_for('courses_blueprint.add_course') }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-plus-circle mr-2"></i>Register New Course</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="small font-weight-bold">AFFILIATED COLLEGE</label>
+                        <select name="affiliation_id" class="form-control" required>
+                            <option value="">-- Select College --</option>
+                            {% for a in affiliations %}
+                            <option value="{{ a.id }}">{{ a.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">COURSE NAME</label>
+                                <input type="text" name="course_name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">CODE</label>
+                                <input type="text" name="course_code" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">LEVEL</label>
+                                <select name="level" class="form-control">
+                                    <option value="Certificate">Certificate</option>
+                                    <option value="Diploma">Diploma</option>
+                                    <option value="Bachelor" selected>Bachelor</option>
+                                    <option value="Master">Master</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">VERSION</label>
+                                <input type="text" name="version" class="form-control" value="1.0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-link text-muted" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Save Course</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% for item in courses %}
+<div class="modal fade" id="editModal{{ item.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ url_for('courses_blueprint.edit_course', course_id=item.id) }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title font-weight-bold">Edit {{ item.course_code }}</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="small font-weight-bold">AFFILIATED COLLEGE</label>
+                        <select name="affiliation_id" class="form-control" required>
+                            {% for a in affiliations %}
+                            <option value="{{ a.id }}" {% if item.affiliation_id == a.id %}selected{% endif %}>{{ a.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">COURSE NAME</label>
+                                <input type="text" name="course_name" class="form-control" value="{{ item.course_name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">CODE</label>
+                                <input type="text" name="course_code" class="form-control" value="{{ item.course_code }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">LEVEL</label>
+                                <select name="level" class="form-control">
+                                    <option value="Certificate" {% if item.level == 'Certificate' %}selected{% endif %}>Certificate</option>
+                                    <option value="Diploma" {% if item.level == 'Diploma' %}selected{% endif %}>Diploma</option>
+                                    <option value="Bachelor" {% if item.level == 'Bachelor' %}selected{% endif %}>Bachelor</option>
+                                    <option value="Master" {% if item.level == 'Master' %}selected{% endif %}>Master</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">VERSION</label>
+                                <input type="text" name="version" class="form-control" value="{{ item.version }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="activeSwitch{{ item.id }}" name="is_active" {% if item.is_active == 1 %}checked{% endif %}>
+                            <label class="custom-control-label" for="activeSwitch{{ item.id }}">Course Active Status</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link text-muted" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info px-4">Update Changes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal{{ item.id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <form action="{{ url_for('courses_blueprint.delete_course', course_id=item.id) }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-content border-0 shadow-lg p-3 text-center">
+                <i class="fas fa-trash text-danger fa-3x mb-3"></i>
+                <p>Are you sure you want to delete <strong>{{ item.course_name }}</strong>?</p>
+                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    $(document).ready(function(){
+      $("#tableSearch").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#coursesTable tbody tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+      });
+    });
+</script>
+{% endblock %}
